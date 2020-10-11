@@ -46,6 +46,7 @@ class ModalViewData extends Component {
                                     <th>State</th>
                                     <th>Postal Code</th>
                                     <th>Phone</th>
+                                    <th>Note</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -55,6 +56,7 @@ class ModalViewData extends Component {
                                         <td>{dataView !== null && dataView.state}</td>
                                         <td>{dataView !== null && dataView.postalCode}</td>
                                         <td>{dataView !== null && dataView.phone}</td>
+                                        <td>{dataView !== null && dataView.note}</td>
                                     </tr>
                                 </tbody>
                             </Table>

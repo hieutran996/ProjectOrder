@@ -10,7 +10,11 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
+import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import EditIcon from '@material-ui/icons/Edit';
+import DoneIcon from '@material-ui/icons/Done';
 import Chip from '@material-ui/core/Chip';
+import Moment from 'moment';
 //Modal
 import ModalSend from "./ModalSend";
 //importExcel
@@ -29,6 +33,9 @@ import { withStyles  } from '@material-ui/core/styles';
 
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
+import swal from 'sweetalert';
+import ModalEditShipping from './EditShipping';
+
 
 const useStyles = (theme) => ({
   button: {
@@ -59,10 +66,13 @@ class todoList extends Component {
       showLast: 0,
       anchorEl: null,
       itemData: null,
+      itemViewData: null,
+      itemViewDataShipping: null,
       modalSend: false,
       modalViewData: false,
+      modalViewShipping: false,
       openDialog: false,
-      loadingImport: false,
+      loadingImport: true,
       dataLabelDetail: null
     };
 
@@ -89,10 +99,15 @@ class todoList extends Component {
         if (data.meta.Code === 200) {
           this.setState({
             listData: data.data,
+            loadingImport: false
           }, () => {
               this.PaginationPage(this.state.activePage)
           });
         }
+      }).catch((error) => {
+        this.setState({
+          loadingImport: false
+        });
       });
   };
   PaginationPage = (activePage) => {
@@ -239,8 +254,15 @@ class todoList extends Component {
     }
     this.setState({
         modalSend: false,
-        modalViewData: false
+        modalViewData: false,
     });
+  }
+
+  modalCloseShipping = () => {
+    this.setState({
+      modalViewShipping: false,
+    });
+    this.getListData();
   }
   
   render() {
@@ -331,21 +353,23 @@ class todoList extends Component {
                 <th>Name</th>
                 <th>Address 1</th>
                 <th>Country</th>
+                <th>Shipping</th>
+                <th>Time Completed</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
             </thead>
             <tbody>
               {this.state.crrData.map((value, index) => {
-                const Status = ""
-                if (value.status === 1) {
-                  Status = <Chip label="Processing" />
+                var Status = ""
+                if (value.status === 0) {
+                  Status = <Chip label="Processing" variant="outlined" />
+                } else if (value.status === 1) {
+                  Status = <Chip label="Shipping"  />
                 } else if (value.status === 2) {
-                  Status = <Chip label="Shipping" />
+                  Status = <Chip label="Hold-on" color="secondary" />
                 } else if (value.status === 3) {
-                  Status = <Chip label="Hold-on" />
-                } else if (value.status === 4) {
-                  Status = <Chip label="Completed" />
+                  Status = <Chip label="Completed" color="primary" />
                 }
                 return (
                   <tr key={index}>
@@ -354,8 +378,66 @@ class todoList extends Component {
                     <td>{value.name}</td>
                     <td>{value.address1}</td>
                     <td>{value.country}</td>
+                    <td>{value.beginShipping !== undefined && Moment(value.beginShipping).format("DD-MM-YYYY")}</td>
+                    <td>{value.beginShipping !== undefined && Moment(value.timeCompleted).format("DD-MM-YYYY")}</td>
                     <td>{Status}</td>
                     <td width={130}>
+                      {
+                        value.status !== 3
+                        && value.beginShipping !== undefined && value.timeCompleted !== undefined
+                        ?
+                        <IconButton
+                          aria-label="check"
+                          color="primary"
+                          onClick={() => {
+                            swal({
+                              title: "Are you sure!",
+                              text: "Are you sure you want to complete " + value.orderNumber,
+                              icon: "warning",
+                              buttons: true,
+                            })
+                              .then(name => {
+                                  if (!name) throw null;
+                                  return fetch(`${HOST2}/api/v1/orders/make-done`, {
+                                      method: 'POST',
+                                      headers: {
+                                          'Content-Type': 'application/json',
+                                      },
+                                      body: JSON.stringify({
+                                          'orderNumber': value.orderNumber
+                                      })
+                                  })
+                              })
+                              .then(response => {
+                                  return response.json()
+                              }).then(data => {
+                                  if (data.meta.Code === 200) {
+                                    toast('Check Done Success!', {
+                                      position: "top-right",
+                                      autoClose: 3000,
+                                      hideProgressBar: false,
+                                      closeOnClick: true,
+                                      pauseOnHover: true,
+                                      draggable: true,
+                                      progress: undefined,
+                                    });
+                                    this.getListData();
+                                  }
+                              }).catch((error) => {
+                                  if (error) {
+                                      swal("Error", "error", "error");
+                                  } else {
+                                      swal.stopLoading();
+                                      swal.close();
+                                  }
+                              })
+                          }}
+                        >
+                          <DoneIcon />
+                        </IconButton>
+                        :
+                        ''
+                      }
                       <IconButton
                         aria-label="view"
                         color="primary"
@@ -368,28 +450,101 @@ class todoList extends Component {
                       >
                         <VisibilityIcon />
                       </IconButton>
-                      <IconButton
-                        aria-label="delete"
-                        color="secondary"
-                        onClick={(v) => {
-                            value.weight = "";
-                            value.height = "";
-                            value.width = "";
-                            value.length = "";
-                            value.is_max = 1;
-                            value.items = [{
-                                "itemDescription": "",
-                                "packagedQuantity": "",
-                                "skuNumber": ""
-                            }];
+                      {
+                        value.status === 0
+                        &&
+                          <IconButton
+                            aria-label="send"
+                            color="primary"
+                            onClick={(v) => {
+                                value.weight = "";
+                                value.height = "";
+                                value.width = "";
+                                value.length = "";
+                                value.is_max = 1;
+                                value.items = [{
+                                    "itemDescription": "",
+                                    "packagedQuantity": "",
+                                    "skuNumber": ""
+                                }];
+                                this.setState({
+                                    itemData: value,
+                                    modalSend: true
+                                });
+                            }}
+                          >
+                            <SendIcon />
+                        </IconButton>
+                      }
+                      {
+                        value.status === 1 || value.status === 2
+                        ?
+                        <IconButton
+                          aria-label="edit"
+                          color="primary"
+                          onClick={() => {
                             this.setState({
-                                itemData: value,
-                                modalSend: true
+                              itemViewDataShipping: value,
+                              modalViewShipping: true
                             });
-                        }}
-                      >
-                        <SendIcon />
-                      </IconButton>
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
+                        :
+                        ''
+                      }
+                      {
+                        value.status !== 3
+                        &&
+                        <IconButton
+                          aria-label="delete"
+                          color="primary"
+                          onClick={() => {
+                            swal({
+                              title: "Are you sure!",
+                              text: "Are you sure you want to delete " + value.orderNumber,
+                              icon: "warning",
+                              buttons: true,
+                            })
+                              .then(name => {
+                                  if (!name) throw null;
+                                  return fetch(`${HOST2}/api/v1/orders?order_number=${encodeURIComponent(value.orderNumber)}`, {
+                                      method: 'DELETE',
+                                      headers: {
+                                        'Content-type': 'application/json; charset=UTF-8'
+                                      },
+                                  })
+                              })
+                              .then(response => {
+                                  return response.json()
+                              }).then(data => {
+                                  console.log(data)
+                                  if (data.meta.Code === 200) {
+                                    toast('Delete Success!', {
+                                      position: "top-right",
+                                      autoClose: 3000,
+                                      hideProgressBar: false,
+                                      closeOnClick: true,
+                                      pauseOnHover: true,
+                                      draggable: true,
+                                      progress: undefined,
+                                    });
+                                    this.getListData();
+                                  }
+                              }).catch((error) => {
+                                  if (error) {
+                                      swal("Error", "error", "error");
+                                  } else {
+                                      swal.stopLoading();
+                                      swal.close();
+                                  }
+                              })
+                          }}
+                        >
+                          <DeleteForeverIcon />
+                        </IconButton>
+                      }
                     </td>
                   </tr>
                 );
@@ -405,6 +560,11 @@ class todoList extends Component {
               data={this.state.itemViewData}
               show={this.state.modalViewData}
               onHide={this.modalClose}
+          />
+          <ModalEditShipping
+              data={this.state.itemViewDataShipping}
+              show={this.state.modalViewShipping}
+              onHide={this.modalCloseShipping}
           />
           <ToastContainer />
           <Dialog

@@ -47,7 +47,7 @@ export default function Menubar() {
       </div>
       <Divider />
       <List>
-        {['LIST 1', 'LIST 2', 'LIST 3'].map((text, index) => (
+        {['Order Management', 'LIST 2', 'LIST 3'].map((text, index) => (
           <ListItem button key={text}>
             <ListItemIcon>
               {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}

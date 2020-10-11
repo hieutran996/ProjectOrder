@@ -1,3 +1,4 @@
+import 'date-fns';
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { Modal } from 'react-bootstrap';
@@ -15,6 +16,11 @@ import { HOST, HOST2 } from '../Config';
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { withStyles  } from '@material-ui/core/styles';
+import Moment from 'moment';
+import {
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
 
 
 
@@ -66,6 +72,7 @@ class ModalSend extends Component {
                 openDialog: true
             });
             this.insertLabelDetail(data.data.labelDetails)
+            this.insertShipping()
             toast('Send Success!', {
                 position: "top-right",
                 autoClose: 3000,
@@ -111,6 +118,28 @@ class ModalSend extends Component {
         });
     };
 
+    //Insert Shipping
+    insertShipping = () => {
+        fetch(`${HOST2}/api/v1/orders/shipping-time`, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-type': 'application/json; charset=UTF-8',
+        },
+        body: JSON.stringify({
+            'orderNumber': this.state.dataSend.orderNumber,
+            'beginShipping': Moment(this.state.dataSend.beginShipping).format("YYYY-MM-DD 00:00:00"),
+            'timeCompleted': Moment(this.state.dataSend.timeCompleted).format("YYYY-MM-DD 23:59:59")
+        }),
+        })
+        .then((response) => {
+            return response.json();
+        })
+        .then((data) => {
+            console.log(data)
+        });
+    };
+
     SendHandle(e) {
         var {dataSend} = this.state;
         dataSend[e.target.name] = parseInt(e.target.value);
@@ -127,8 +156,15 @@ class ModalSend extends Component {
     componentWillReceiveProps(nextProps) {
         if (nextProps.show === true) {
             //dataSend
+
+            var data = {...nextProps.data}
+            if (data.beginShipping === undefined || data.timeCompleted === undefined) {
+                data.beginShipping = Moment(new Date()).format("YYYY-MM-DD 00:00:00")
+                data.timeCompleted = Moment(new Date()).format("YYYY-MM-DD 23:59:59")
+            }
+            console.log(data)
             this.setState({
-                dataSend: nextProps.data
+                dataSend: data,
             });
         }
     }
@@ -142,13 +178,28 @@ class ModalSend extends Component {
         }
     }
 
+    handleDateChangeShipping = (date) => {
+        let {dataSend} = this.state;
+        dataSend.beginShipping = date
+        this.setState({
+            dataSend
+        });
+    };
+
+    handleDateChangeCompleted = (date) => {
+        let {dataSend} = this.state;
+        dataSend.timeCompleted = date
+        this.setState({
+            dataSend
+        });
+    };
+
     render() {
         const { classes } = this.props;
         let {dataSend} = this.state;
         let click_handle = (event) => {
             this.updateGroup(dataSend, event);
         }
-        console.log(dataSend)
         return (
             <Modal
                 {...this.props}
@@ -163,7 +214,7 @@ class ModalSend extends Component {
                 </Modal.Header>
                 <Modal.Body>
                     <form id="formAddGroup">
-                        <div className="col-xl-12 p-0">
+                        <div className="col-xl-12">
                             <div className="m-widget14 row m-0 pb-3">
 
                                 <div className="form-group m-form__group col-md-6 pl-md-0">
@@ -181,6 +232,40 @@ class ModalSend extends Component {
                                 <div className="form-group m-form__group col-md-6 pr-md-0">
                                     <label htmlFor="Name">Length<span className="text-danger"> *</span></label>
                                     <input type="number" className="form-control m-input" id="Length" name='length' value={dataSend !== null && dataSend.length} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)}  />
+                                </div>
+                                <div className="form-group m-form__group col-md-6 pl-md-0">
+                                    <label htmlFor="Name">Begin Shipping<span className="text-danger"> *</span></label>
+                                    <KeyboardDatePicker
+                                        disableToolbar
+                                        variant="inline"
+                                        format="dd-MM-yyyy"
+                                        margin="normal"
+                                        id="date-picker-inline"
+                                        label="Date picker"
+                                        value={dataSend !== null && dataSend.beginShipping}
+                                        onChange={this.handleDateChangeShipping}
+                                        KeyboardButtonProps={{
+                                            'aria-label': 'change date',
+                                        }}
+                                        className="form-control m-input mt-0"    
+                                        />
+                                </div>
+                                <div className="form-group m-form__group col-md-6 pr-md-0">
+                                    <label htmlFor="Name">Time Completed<span className="text-danger"> *</span></label>
+                                    <KeyboardDatePicker
+                                        disableToolbar
+                                        variant="inline"
+                                        format="dd-MM-yyyy"
+                                        margin="normal"
+                                        id="date-picker-inline"
+                                        label="Date picker"
+                                        value={dataSend !== null && dataSend.timeCompleted}
+                                        onChange={this.handleDateChangeCompleted}
+                                        KeyboardButtonProps={{
+                                            'aria-label': 'change date',
+                                        }}
+                                        className="form-control m-input mt-0"    
+                                        />
                                 </div>
                             </div>
                             <Divider />
