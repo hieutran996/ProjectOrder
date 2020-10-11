@@ -74,12 +74,9 @@ export default function SignIn() {
     <Container component="main" maxWidth="xs">
       <CssBaseline />
       <div className={classes.paper}>
-        <Avatar className={classes.avatar}>
-          <LockOutlinedIcon />
-        </Avatar>
-        <Typography component="h1" variant="h5">
-          Đăng Nhập
-        </Typography>
+        <div className="col-md-12 mb-3 p-0">
+          <img src="logo.png" className="col-md-12 p-0"/>
+        </div>
         <form className={classes.form} onSubmit={onSubmit}>
           <TextField
             variant="outlined"
