@@ -415,6 +415,7 @@ class todoList extends Component {
               this.setState(
                 {
                   activePage: 1,
+                  loadingImport: true
                 },
                 () => {
                   this.getListData();
