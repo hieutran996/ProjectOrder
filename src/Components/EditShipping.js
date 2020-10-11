@@ -94,7 +94,7 @@ class ModalEditShipping extends Component {
     componentWillReceiveProps(nextProps) {
         if (nextProps.show === true) {
             //dataEdit
-            var data = nextProps.data
+            var data = {...nextProps.data}
             if (data.beginShipping === undefined || data.timeCompleted === undefined) {
                 data.beginShipping = Moment(new Date()).format("YYYY-MM-DD 00:00:00")
                 data.timeCompleted = Moment(new Date()).format("YYYY-MM-DD 23:59:59")
@@ -171,7 +171,7 @@ class ModalEditShipping extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="contained"  onClick={this.props.onHide} className="mr-2">Close</Button>
-                    <Button variant="contained" color="primary"   onClick={click_handle}>Send</Button>
+                    <Button variant="contained" color="primary"   onClick={click_handle}>Update</Button>
                 </Modal.Footer>
             </Modal>
         );

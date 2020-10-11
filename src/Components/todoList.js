@@ -36,15 +36,57 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import swal from 'sweetalert';
 import ModalEditShipping from './EditShipping';
 
+import InputLabel from '@material-ui/core/InputLabel';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import {
+  KeyboardTimePicker,
+  KeyboardDatePicker,
+} from '@material-ui/pickers';
+
 
 const useStyles = (theme) => ({
   button: {
     margin: theme.spacing(1),
     marginRight: 0,
+    marginBottom: 0,
+  },
+  input: {
+    marginTop: 15,
+    marginRight: 10,
+    marginBottom: 0,
+  },
+  buttonSearch: {
+    marginTop: -5,
   },
   backdrop: {
     zIndex: theme.zIndex.drawer + 1,
     color: '#fff',
+  },
+  bg_processing: {
+    background: '#00FF00',
+    color: "#fff"
+  },
+  bg_shipping: {
+    background: '#FE2EF7',
+    color: "#fff"
+  },
+  bg_hold_on: {
+    background: '#F7FE2E',
+  },
+  bg_completed: {
+    background: '#0000FF',
+    color: "#fff"
+  },
+  formControl: {
+    margin: theme.spacing(1),
+    marginTop: 0,
+    marginLeft: 0,
+    minWidth: '100%',
+  },
+  selectEmpty: {
+    marginTop: theme.spacing(2),
   },
 });
 
@@ -73,10 +115,13 @@ class todoList extends Component {
       modalViewShipping: false,
       openDialog: false,
       loadingImport: true,
-      dataLabelDetail: null
+      dataLabelDetail: null,
+      startDate: new Date(),
+      endDate: new Date(),
+      status: '',
     };
 
-    this.itemsPerPage = 5;
+    this.itemsPerPage = 10;
   }
 
   componentDidMount() {
@@ -85,7 +130,7 @@ class todoList extends Component {
 
   //GetList
   getListData = () => {
-      fetch(`${HOST2}/api/v1/orders/search`, {
+      fetch(`${HOST2}/api/v1/orders/search?order_number=${encodeURIComponent(this.state.valueSearch)}&begin_time=${encodeURIComponent(Moment(this.state.startDate).format("YYYY-MM-DD 00:00:00"))}&end_time=${encodeURIComponent(Moment(this.state.endDate).format("YYYY-MM-DD 23:59:59"))}&status=${encodeURIComponent(this.state.status !== "" ? parseInt(this.state.status) : "")}`, {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
@@ -111,12 +156,8 @@ class todoList extends Component {
       });
   };
   PaginationPage = (activePage) => {
-    var listData = [];
-    this.state.listData.forEach((item) => {
-      if (item.name.toLowerCase().indexOf(this.state.valueSearch.toLowerCase()) !== -1 || item.orderNumber.toLowerCase().indexOf(this.state.valueSearch.toLowerCase()) !== -1) {
-        listData.push(item);
-      }
-    });
+    var listData = [...this.state.listData];
+
     const offset = (activePage - 1) * this.itemsPerPage;
     const crrData = listData.slice(offset, offset + this.itemsPerPage);
     this.setState({
@@ -264,16 +305,85 @@ class todoList extends Component {
     });
     this.getListData();
   }
+
+  handleChangStartDate = (date) => {
+    this.setState({
+      startDate: Moment(date).format("YYYY-MM-DD 00:00:00")
+    });
+  };
+
+  handleChangEndDate = (date) => {
+    this.setState({
+      endDate: Moment(date).format("YYYY-MM-DD 23:59:59")
+    });
+  };
+
+  handleChangeStatus = (event) => {
+    this.setState({
+      status: event.target.value
+    });
+  };
   
   render() {
     const { classes } = this.props;
     let {openDialog,dataLabelDetail} = this.state;
     return (
       <div className="row">
-        <div className="pb-3 col-md-6">
+        <div className="col-md-2 pb-3">
+          <KeyboardDatePicker
+            disableToolbar
+            variant="inline"
+            format="dd-MM-yyyy"
+            margin="normal"
+            id="date-picker-inline"
+            label="Start Date"
+            value={this.state.startDate}
+            onChange={this.handleChangStartDate}
+            KeyboardButtonProps={{
+                'aria-label': 'change date',
+            }}
+            className="form-control m-input mt-0"
+          />
+        </div>
+        <div className="col-md-2 pb-3">
+          <KeyboardDatePicker
+            disableToolbar
+            variant="inline"
+            format="dd-MM-yyyy"
+            margin="normal"
+            id="date-picker-inline"
+            label="End Date"
+            value={this.state.endDate}
+            onChange={this.handleChangEndDate}
+            KeyboardButtonProps={{
+                'aria-label': 'change date',
+            }}
+            className="form-control m-input mt-0"
+          />
+        </div>
+        <div className="col-md-1">
+          <FormControl className={classes.formControl}>
+            <Select
+              labelId="demo-simple-select-label"
+              id="demo-simple-select"
+              value={this.state.status}
+              displayEmpty
+              onChange={this.handleChangeStatus}
+              className={classes.selectEmpty}
+              inputProps={{ 'aria-label': 'Without label' }}
+            >
+              <MenuItem value=""><em>All</em></MenuItem>
+              <MenuItem value={0}>Processing</MenuItem>
+              <MenuItem value={1}>Shipping</MenuItem>
+              <MenuItem value={2}>Hold On</MenuItem>
+              <MenuItem value={3}>Completed</MenuItem>
+            </Select>
+          </FormControl>
+        </div>
+        <div className="pb-3 col-md-3">
           <Input
             placeholder="Enter name or order..."
-            className="mr-3"
+            className={classes.input}
             name="search"
             value={this.state.valueSearch}
             onChange={(event) => {
@@ -300,13 +410,14 @@ class todoList extends Component {
           <Button
             variant="contained"
             color="primary"
+            className={classes.buttonSearch}
             onClick={() => {
               this.setState(
                 {
                   activePage: 1,
                 },
                 () => {
-                  this.PaginationPage(this.state.activePage);
+                  this.getListData();
                 }
               );
             }}
@@ -314,7 +425,7 @@ class todoList extends Component {
             Search
           </Button>
         </div>
-        <div className="text-right col-md-6">
+        <div className="text-right col-md-4">
           <Button
             variant="contained"
             color="default"
@@ -348,7 +459,7 @@ class todoList extends Component {
           <Table bordered hover>
             <thead>
               <tr>
-                <th>#</th>
+                <th>STT</th>
                 <th>Order Number</th>
                 <th>Name</th>
                 <th>Address 1</th>
@@ -363,13 +474,13 @@ class todoList extends Component {
               {this.state.crrData.map((value, index) => {
                 var Status = ""
                 if (value.status === 0) {
-                  Status = <Chip label="Processing" variant="outlined" />
+                  Status = <Chip label="Processing" className={classes.bg_processing} />
                 } else if (value.status === 1) {
-                  Status = <Chip label="Shipping"  />
+                  Status = <Chip label="Shipping" className={classes.bg_shipping} />
                 } else if (value.status === 2) {
-                  Status = <Chip label="Hold-on" color="secondary" />
+                  Status = <Chip label="Hold-on" className={classes.bg_hold_on} />
                 } else if (value.status === 3) {
-                  Status = <Chip label="Completed" color="primary" />
+                  Status = <Chip label="Completed" className={classes.bg_completed} />
                 }
                 return (
                   <tr key={index}>
@@ -381,7 +492,19 @@ class todoList extends Component {
                     <td>{value.beginShipping !== undefined && Moment(value.beginShipping).format("DD-MM-YYYY")}</td>
                     <td>{value.beginShipping !== undefined && Moment(value.timeCompleted).format("DD-MM-YYYY")}</td>
                     <td>{Status}</td>
-                    <td width={130}>
+                    <td width={220}>
+                      <IconButton
+                        aria-label="view"
+                        color="primary"
+                        onClick={() => {
+                          this.setState({
+                            itemViewData: value,
+                            modalViewData: true
+                          });
+                        }}
+                      >
+                        <VisibilityIcon />
+                      </IconButton>
                       {
                         value.status !== 3
                         && value.beginShipping !== undefined && value.timeCompleted !== undefined
@@ -438,20 +561,8 @@ class todoList extends Component {
                         :
                         ''
                       }
-                      <IconButton
-                        aria-label="view"
-                        color="primary"
-                        onClick={() => {
-                          this.setState({
-                            itemViewData: value,
-                            modalViewData: true
-                          });
-                        }}
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
                       {
-                        value.status === 0
+                        value.lableDetails.partnerTrackingNumber === ""  && value.status !== 3
                         &&
                           <IconButton
                             aria-label="send"
@@ -477,7 +588,7 @@ class todoList extends Component {
                         </IconButton>
                       }
                       {
-                        value.status === 1 || value.status === 2
+                        value.status === 1 || value.status === 2 || value.lableDetails.partnerTrackingNumber !== "" && value.status !== 3
                         ?
                         <IconButton
                           aria-label="edit"

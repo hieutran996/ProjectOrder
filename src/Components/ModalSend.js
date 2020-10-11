@@ -120,6 +120,7 @@ class ModalSend extends Component {
 
     //Insert Shipping
     insertShipping = () => {
+        if (this.state.dataSend.timeCompleted === undefined) return;
         fetch(`${HOST2}/api/v1/orders/shipping-time`, {
         method: 'POST',
         headers: {
@@ -160,9 +161,7 @@ class ModalSend extends Component {
             var data = {...nextProps.data}
             if (data.beginShipping === undefined || data.timeCompleted === undefined) {
                 data.beginShipping = Moment(new Date()).format("YYYY-MM-DD 00:00:00")
-                data.timeCompleted = Moment(new Date()).format("YYYY-MM-DD 23:59:59")
             }
-            console.log(data)
             this.setState({
                 dataSend: data,
             });
@@ -234,7 +233,7 @@ class ModalSend extends Component {
                                     <input type="number" className="form-control m-input" id="Length" name='length' value={dataSend !== null && dataSend.length} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)}  />
                                 </div>
                                 <div className="form-group m-form__group col-md-6 pl-md-0">
-                                    <label htmlFor="Name">Begin Shipping<span className="text-danger"> *</span></label>
+                                    <label htmlFor="Name">Begin Shipping</label>
                                     <KeyboardDatePicker
                                         disableToolbar
                                         variant="inline"
@@ -251,7 +250,7 @@ class ModalSend extends Component {
                                         />
                                 </div>
                                 <div className="form-group m-form__group col-md-6 pr-md-0">
-                                    <label htmlFor="Name">Time Completed<span className="text-danger"> *</span></label>
+                                    <label htmlFor="Name">Time Completed</label>
                                     <KeyboardDatePicker
                                         disableToolbar
                                         variant="inline"
@@ -259,7 +258,7 @@ class ModalSend extends Component {
                                         margin="normal"
                                         id="date-picker-inline"
                                         label="Date picker"
-                                        value={dataSend !== null && dataSend.timeCompleted}
+                                        value={dataSend === null ? null : dataSend.timeCompleted === undefined ? null : dataSend.timeCompleted }
                                         onChange={this.handleDateChangeCompleted}
                                         KeyboardButtonProps={{
                                             'aria-label': 'change date',

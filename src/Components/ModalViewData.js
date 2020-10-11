@@ -2,13 +2,75 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Table from 'react-bootstrap/Table';
 import { Modal } from 'react-bootstrap';
+import Button from '@material-ui/core/Button';
+import {toast } from 'react-toastify';
+import Backdrop from '@material-ui/core/Backdrop';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import { withStyles  } from '@material-ui/core/styles';
+import {HOST2} from '../Config'
+
+const useStyles = (theme) => ({
+    backdrop: {
+      zIndex: theme.zIndex.drawer + 1,
+      color: '#fff',
+    },
+  });
+  
 class ModalViewData extends Component {
 
     constructor(props) {
         super(props);
         this.state = {
             dataView: null,
+            loadingNote: false
         }
+    }
+
+    //Insert
+    updateNote = (dataView) => {
+        this.setState({loadingNote: true});
+        fetch(`${HOST2}/api/v1/orders`, {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-type': 'application/json; charset=UTF-8',
+        },
+        body: JSON.stringify(dataView),
+        })
+        .then((response) => {
+            return response.json();
+        })
+        .then((data) => {
+            console.log(data)
+        this.setState({loadingNote: false});
+            toast('Update Success!', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+            return this.props.onHide();
+        }).catch((error) => {
+            toast('Update False!', {
+                position: "top-right",
+                autoClose: 3000,
+                hideProgressBar: false,
+                closeOnClick: true,
+                pauseOnHover: true,
+                draggable: true,
+                progress: undefined,
+            });
+        this.setState({loadingNote: false});
+        });
+    };
+
+    SendHandle(e) {
+        var {dataView} = this.state;
+        dataView[e.target.name] = e.target.value;
+        this.setState({ dataView });
     }
 
     componentWillReceiveProps(nextProps) {
@@ -22,7 +84,11 @@ class ModalViewData extends Component {
 
 
     render() {
+        const { classes } = this.props;
         let {dataView} = this.state;
+        let click_handle = (event) => {
+            this.updateNote(dataView, event);
+        }
         return (
             <Modal
                 {...this.props}
@@ -37,7 +103,7 @@ class ModalViewData extends Component {
                 </Modal.Header>
                 <Modal.Body>
                     <form id="formAddGroup">
-                        <div className="col-xl-12 p-0">
+                        <div className="col-xl-12 mt-3">
                             <Table bordered hover>
                                 <thead>
                                 <tr>
@@ -46,7 +112,6 @@ class ModalViewData extends Component {
                                     <th>State</th>
                                     <th>Postal Code</th>
                                     <th>Phone</th>
-                                    <th>Note</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -56,12 +121,11 @@ class ModalViewData extends Component {
                                         <td>{dataView !== null && dataView.state}</td>
                                         <td>{dataView !== null && dataView.postalCode}</td>
                                         <td>{dataView !== null && dataView.phone}</td>
-                                        <td>{dataView !== null && dataView.note}</td>
                                     </tr>
                                 </tbody>
                             </Table>
                         </div>
-                        <div className="col-xl-12 p-0">
+                        <div className="col-xl-12">
                             <Table bordered hover>
                                 <thead>
                                 <tr>
@@ -79,7 +143,21 @@ class ModalViewData extends Component {
                                 </tbody>
                             </Table>
                         </div>
+                        <div className="col-xl-12">
+                            <div className="m-widget14 pb-2">
+                                <div className="form-group m-form__group col-md-12 p-0">
+                                    <label htmlFor="Name">Note</label>
+                                    <textarea type="text" rows="4" className="form-control m-input" id="note" name='note' value={dataView !== null && dataView.note} onChange={e => this.SendHandle(e)}  />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-center">
+                            <Button variant="contained" color="primary"  onClick={click_handle}>Save Note</Button>
+                        </div>
                     </form>
+                    <Backdrop className={classes.backdrop} open={this.state.loadingNote}>
+                        <CircularProgress color="inherit" />
+                    </Backdrop>
                 </Modal.Body>
             </Modal>
         );
@@ -94,4 +172,4 @@ ModalViewData.propTypes = {
 
 
 
-export default ModalViewData;
+export default withStyles(useStyles)(ModalViewData);
