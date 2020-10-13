@@ -52,13 +52,14 @@ export default function SignIn() {
       },
     })
       .then(function (response) {
-        console.log(response);
         if (response.status !== 200) {
           swal('Lỗi!', 'Đăng nhập thất bại', 'error');
           return;
         }
         if (response.data.meta.code === 200) {
           localStorage.setItem('access_token', response.data.data.access_token);
+          localStorage.setItem('time_login', response.data.meta.timestamp);
+          localStorage.setItem('time_access_token', response.data.data.expired_in);
           localStorage.setItem('client_id', username);
           window.location.href = '/';
         } else {

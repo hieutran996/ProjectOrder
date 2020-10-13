@@ -20,16 +20,20 @@ export default function Header() {
   const [open, setOpen] = useRecoilState(openMenuState);
   const [anchorEl, setAnchorEl] = useState(null);
   const [isLogin, setIsLogin] = useState(true);
-  const [info, setInfo] = useState(null);
   const openProfile = Boolean(anchorEl);
 
   useEffect(() => {
     var access_token = localStorage.getItem('access_token')
-    var info = localStorage.getItem('info')
-    if (access_token === null && info === null) {
+    var time_login = localStorage.getItem('time_login')
+    if (time_login !== null) {
+      time_login = Math.round(new Date(time_login).getTime()/1000)
+    }
+    var timeNow = Math.round(new Date().getTime()/1000)
+    var time_access_token = localStorage.getItem('time_access_token')
+
+    if (access_token === null || (timeNow - time_login) > time_access_token) {
       setIsLogin(false)
     }
-    setInfo(JSON.parse(info))
   }, [])
 
   const handleMenu = (event) => {
@@ -70,7 +74,7 @@ export default function Header() {
         <div>
           <Avatar
             alt="Avata"
-            src={info !== null ? info.picture.data.url : ''}
+            src={''}
             onClick={handleMenu}
             className={classes.avata}
           />
