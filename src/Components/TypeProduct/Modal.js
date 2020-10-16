@@ -53,7 +53,7 @@ class ModalTypePruduct extends Component {
             this.setState({loading: false,});
             toast('Add Success!', {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 2000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,
@@ -65,7 +65,7 @@ class ModalTypePruduct extends Component {
             this.setState({loading: false});
             toast('Add Error!', {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 2000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,

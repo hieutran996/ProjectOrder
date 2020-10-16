@@ -45,7 +45,7 @@ class ModalViewData extends Component {
         this.setState({loadingNote: false});
             toast('Update Success!', {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 2000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,
@@ -56,7 +56,7 @@ class ModalViewData extends Component {
         }).catch((error) => {
             toast('Update False!', {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 2000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,

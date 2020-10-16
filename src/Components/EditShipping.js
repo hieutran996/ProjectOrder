@@ -99,7 +99,7 @@ class ModalEditShipping extends Component {
                     this.setState({loading: false,});
                     toast('Check Done Success!', {
                         position: "top-right",
-                        autoClose: 3000,
+                        autoClose: 2000,
                         hideProgressBar: false,
                         closeOnClick: true,
                         pauseOnHover: true,
@@ -111,7 +111,7 @@ class ModalEditShipping extends Component {
                     this.setState({loading: false});
                     toast('Check Done Error!', {
                         position: "top-right",
-                        autoClose: 3000,
+                        autoClose: 2000,
                         hideProgressBar: false,
                         closeOnClick: true,
                         pauseOnHover: true,

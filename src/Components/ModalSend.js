@@ -113,7 +113,7 @@ class ModalSend extends Component {
             this.insertShipping()
             toast('Send Success!', {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 2000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,
@@ -125,7 +125,7 @@ class ModalSend extends Component {
             this.setState({loading: false});
             toast('Send Error!', {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 2000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,

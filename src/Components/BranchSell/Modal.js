@@ -53,7 +53,7 @@ class ModalBranchSell extends Component {
             this.setState({loading: false,});
             toast('Add Success!', {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 2000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,
@@ -65,7 +65,7 @@ class ModalBranchSell extends Component {
             this.setState({loading: false});
             toast('Add Error!', {
                 position: "top-right",
-                autoClose: 3000,
+                autoClose: 2000,
                 hideProgressBar: false,
                 closeOnClick: true,
                 pauseOnHover: true,
@@ -75,9 +75,14 @@ class ModalBranchSell extends Component {
         }
     }
 
-    HandleChange(e,index) {
+    HandleChangeName(e,index) {
         var {dataBranchSell} = this.state;
         dataBranchSell[index][e.target.name] = e.target.value.toLowerCase().trim();
+        this.setState({ dataBranchSell });
+    }
+    HandleChangeNote(e,index) {
+        var {dataBranchSell} = this.state;
+        dataBranchSell[index][e.target.name] = e.target.value;
         this.setState({ dataBranchSell });
     }
 
@@ -150,8 +155,8 @@ class ModalBranchSell extends Component {
                                     dataBranchSell.map((val, index) => {
                                         return(
                                             <tr key={index}>
-                                                <td><input type="text" className="form-control m-input" id="name" name='name' value={val.name} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChange(e,index)}  /></td>
-                                                <td><input type="text" className="form-control m-input" id="note" name='note' value={val.note} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChange(e,index)}  /></td>
+                                                <td><input type="text" className="form-control m-input" id="name" name='name' value={val.name} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChangeName(e,index)}  /></td>
+                                                <td><input type="text" className="form-control m-input" id="note" name='note' value={val.note} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChangeNote(e,index)}  /></td>
                                                 <td width={50}>
                                                     {
                                                         dataBranchSell.length > 1

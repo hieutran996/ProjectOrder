@@ -3,6 +3,7 @@ import Table from 'react-bootstrap/Table';
 import Pagination from 'react-js-pagination';
 import IconButton from '@material-ui/core/IconButton';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import EditIcon from '@material-ui/icons/Edit';
 import Input from '@material-ui/core/Input';
 import Button from '@material-ui/core/Button';
 import { ToastContainer, toast } from 'react-toastify';
@@ -10,6 +11,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import swal from 'sweetalert';
 //Modal
 import Modal from "./Modal";
+import ModalEdit from "./ModalEdit";
 //importExcel
 import {HOST,HOST2} from '../../Config'
 import { withStyles  } from '@material-ui/core/styles';
@@ -75,7 +77,9 @@ class BranchSell extends Component {
       showFirst: 0,
       showLast: 0,
       anchorEl: null,
+      dataEdit: null,
       modalShow: false,
+      modalEdit: false,
       loading: true,
       itemData: [
         {
@@ -157,6 +161,7 @@ class BranchSell extends Component {
   modalClose = () => {
     this.setState({
         modalShow: false,
+        modalEdit: false
     });
     this.getListData();
   }
@@ -249,7 +254,22 @@ class BranchSell extends Component {
                     <td width={80} >{index + this.state.offset + 1}</td>
                     <td>{value.name}</td>
                     <td>{value.note}</td>
-                    <td width={80} style={{"padding": "0px"}}>
+                    <td width={120} style={{"padding": "0px"}}>
+                      <IconButton
+                          aria-label="edit"
+                          color="primary"
+                          onClick={() => {
+                            this.setState({
+                              dataEdit: {
+                                "name": value.name,
+                                "note": value.note
+                              },
+                              modalEdit: true
+                            });
+                          }}
+                        >
+                          <EditIcon />
+                        </IconButton>
                       <IconButton
                           aria-label="delete"
                           color="primary"
@@ -309,6 +329,11 @@ class BranchSell extends Component {
           <Modal
               data={this.state.itemData}
               show={this.state.modalShow}
+              onHide={this.modalClose}
+          />
+          <ModalEdit
+              data={this.state.dataEdit}
+              show={this.state.modalEdit}
               onHide={this.modalClose}
           />
           <ToastContainer />

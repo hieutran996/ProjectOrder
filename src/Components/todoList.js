@@ -248,7 +248,7 @@ class todoList extends Component {
       this.setState({loadingImport: false});
         toast('Import Success!', {
             position: "top-right",
-            autoClose: 3000,
+            autoClose: 2000,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: true,
@@ -259,7 +259,7 @@ class todoList extends Component {
     }).catch((error) => {
       toast('Import False!', {
         position: "top-right",
-        autoClose: 3000,
+        autoClose: 2000,
         hideProgressBar: false,
         closeOnClick: true,
         pauseOnHover: true,
@@ -479,11 +479,11 @@ class todoList extends Component {
                 var Status = ""
                 if (value.status === 0) {
                   Status = <Chip label="Waitting" className={classes.bg_processing} />
-                } else if (value.status === 1) {
-                  Status = <Chip label="Shipping" className={classes.bg_shipping} />
                 } else if (value.status === 2) {
-                  Status = <Chip label="Completed" className={classes.bg_completed} />
+                  Status = <Chip label="Shipping" className={classes.bg_shipping} />
                 } else if (value.status === 3) {
+                  Status = <Chip label="Completed" className={classes.bg_completed} />
+                } else if (value.status === 1) {
                   Status = <Chip label="Delay" className={classes.bg_delay} />
                 }
                 return (
@@ -510,7 +510,7 @@ class todoList extends Component {
                         <VisibilityIcon />
                       </IconButton>
                       {
-                        value.status === 2
+                        value.status === 3
                         ?
                         <IconButton
                           aria-label="delay"
@@ -540,7 +540,7 @@ class todoList extends Component {
                                   if (data.meta.Code === 200) {
                                     toast('Delay Success!', {
                                       position: "top-right",
-                                      autoClose: 3000,
+                                      autoClose: 2000,
                                       hideProgressBar: false,
                                       closeOnClick: true,
                                       pauseOnHover: true,
@@ -591,7 +591,7 @@ class todoList extends Component {
                         </IconButton>
                       }
                       {
-                        value.status === 1 || value.status === 3 || value.lableDetails.partnerTrackingNumber !== "" && value.status !== 2
+                        value.status === 2 || value.status === 1 || value.lableDetails.partnerTrackingNumber !== "" && value.status !== 3
                         ?
                         <IconButton
                           aria-label="edit"
@@ -609,7 +609,7 @@ class todoList extends Component {
                         ''
                       }
                       {
-                        value.status !== 2
+                        value.status !== 3
                         &&
                         <IconButton
                           aria-label="delete"
@@ -637,7 +637,7 @@ class todoList extends Component {
                                   if (data.meta.Code === 200) {
                                     toast('Delete Success!', {
                                       position: "top-right",
-                                      autoClose: 3000,
+                                      autoClose: 2000,
                                       hideProgressBar: false,
                                       closeOnClick: true,
                                       pauseOnHover: true,
