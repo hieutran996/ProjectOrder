@@ -17,6 +17,10 @@ const useStyles = (theme) => ({
       zIndex: theme.zIndex.drawer + 1,
       color: '#fff',
     },
+    bg_completed: {
+        background: '#00c5dc',
+        color: "#fff"
+    },
 });
 class ModalEditShipping extends Component {
 
@@ -74,6 +78,50 @@ class ModalEditShipping extends Component {
             })
     }
 
+    updateComplated = (dataEdit, event) => {
+        event.preventDefault();
+        this.setState({loading: true});
+        fetch(`${HOST2}/api/v1/orders/make-done`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-type': 'application/json; charset=UTF-8',
+            },
+            body: JSON.stringify({
+                'orderNumber': dataEdit.orderNumber,
+            }),
+        })
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                if (data.meta.Code === 200) {
+                    this.setState({loading: false,});
+                    toast('Check Done Success!', {
+                        position: "top-right",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                    });
+                    return this.props.onHide();
+                } else {
+                    this.setState({loading: false});
+                    toast('Check Done Error!', {
+                        position: "top-right",
+                        autoClose: 3000,
+                        hideProgressBar: false,
+                        closeOnClick: true,
+                        pauseOnHover: true,
+                        draggable: true,
+                        progress: undefined,
+                    });
+                }
+            })
+    }
+
     handleDateChangeShipping = (date) => {
         let {dataEdit} = this.state;
         dataEdit.beginShipping = date
@@ -110,6 +158,9 @@ class ModalEditShipping extends Component {
         let {dataEdit} = this.state;
         let click_handle = (event) => {
             this.updateShipping(dataEdit, event);
+        }
+        let click_complated = (event) => {
+            this.updateComplated(dataEdit, event);
         }
         return (
             <Modal
@@ -171,6 +222,7 @@ class ModalEditShipping extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="contained"  onClick={this.props.onHide} className="mr-2">Close</Button>
+                    <Button variant="contained" className={[classes.bg_completed, 'mr-2']}  onClick={click_complated}>Complated</Button>
                     <Button variant="contained" color="primary"   onClick={click_handle}>Update</Button>
                 </Modal.Footer>
             </Modal>

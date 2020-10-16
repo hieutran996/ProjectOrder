@@ -14,6 +14,7 @@ import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import EditIcon from '@material-ui/icons/Edit';
 import DoneIcon from '@material-ui/icons/Done';
 import Chip from '@material-ui/core/Chip';
+import TimerOffIcon from '@material-ui/icons/TimerOff';
 import Moment from 'moment';
 //Modal
 import ModalSend from "./ModalSend";
@@ -65,18 +66,19 @@ const useStyles = (theme) => ({
     color: '#fff',
   },
   bg_processing: {
-    background: '#00FF00',
-    color: "#fff"
+    background: '#c4c5d6',
+    color: "#111"
   },
   bg_shipping: {
-    background: '#FE2EF7',
+    background: '#ffb822',
     color: "#fff"
   },
-  bg_hold_on: {
-    background: '#F7FE2E',
+  bg_delay: {
+    background: '#f4516c',
+    color: '#fff'
   },
   bg_completed: {
-    background: '#0000FF',
+    background: '#00c5dc',
     color: "#fff"
   },
   formControl: {
@@ -476,13 +478,13 @@ class todoList extends Component {
               {this.state.crrData.map((value, index) => {
                 var Status = ""
                 if (value.status === 0) {
-                  Status = <Chip label="Processing" className={classes.bg_processing} />
+                  Status = <Chip label="Waitting" className={classes.bg_processing} />
                 } else if (value.status === 1) {
                   Status = <Chip label="Shipping" className={classes.bg_shipping} />
                 } else if (value.status === 2) {
-                  Status = <Chip label="Hold-on" className={classes.bg_hold_on} />
-                } else if (value.status === 3) {
                   Status = <Chip label="Completed" className={classes.bg_completed} />
+                } else if (value.status === 3) {
+                  Status = <Chip label="Delay" className={classes.bg_delay} />
                 }
                 return (
                   <tr key={index}>
@@ -508,22 +510,21 @@ class todoList extends Component {
                         <VisibilityIcon />
                       </IconButton>
                       {
-                        value.status !== 3
-                        && value.beginShipping !== undefined && value.timeCompleted !== undefined
+                        value.status === 2
                         ?
                         <IconButton
-                          aria-label="check"
+                          aria-label="delay"
                           color="primary"
                           onClick={() => {
                             swal({
                               title: "Are you sure!",
-                              text: "Are you sure you want to complete " + value.orderNumber,
+                              text: "Are you sure you want to delay " + value.orderNumber,
                               icon: "warning",
                               buttons: true,
                             })
                               .then(name => {
                                   if (!name) throw null;
-                                  return fetch(`${HOST2}/api/v1/orders/make-done`, {
+                                  return fetch(`${HOST2}/api/v1/orders/delay`, {
                                       method: 'POST',
                                       headers: {
                                           'Content-Type': 'application/json',
@@ -537,7 +538,7 @@ class todoList extends Component {
                                   return response.json()
                               }).then(data => {
                                   if (data.meta.Code === 200) {
-                                    toast('Check Done Success!', {
+                                    toast('Delay Success!', {
                                       position: "top-right",
                                       autoClose: 3000,
                                       hideProgressBar: false,
@@ -558,7 +559,7 @@ class todoList extends Component {
                               })
                           }}
                         >
-                          <DoneIcon />
+                          <TimerOffIcon />
                         </IconButton>
                         :
                         ''
@@ -590,7 +591,7 @@ class todoList extends Component {
                         </IconButton>
                       }
                       {
-                        value.status === 1 || value.status === 2 || value.lableDetails.partnerTrackingNumber !== "" && value.status !== 3
+                        value.status === 1 || value.status === 3 || value.lableDetails.partnerTrackingNumber !== "" && value.status !== 2
                         ?
                         <IconButton
                           aria-label="edit"
@@ -608,7 +609,7 @@ class todoList extends Component {
                         ''
                       }
                       {
-                        value.status !== 3
+                        value.status !== 2
                         &&
                         <IconButton
                           aria-label="delete"
