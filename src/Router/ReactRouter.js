@@ -12,6 +12,9 @@ import MenuBar from '../Commons/Layouts/Menubar';
 import Header from '../Commons/Layouts/Header';
 //Components
 import Dashboard from '../Components/todoList';
+import BranchSell from '../Components/BranchSell';
+import TypeProduct from '../Components/TypeProduct';
+import Seller from '../Components/Seller';
 const drawerWidth = 240;
 function ReactRouter() {
   const classes = useStyles();
@@ -29,7 +32,10 @@ function ReactRouter() {
       >
         <div className={classes.drawerHeader} />
         <Route path="/" exact component={Dashboard} />
-        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/order_management" component={Dashboard} />
+        <Route path="/branch_sell" component={BranchSell} />
+        <Route path="/type_product" component={TypeProduct} />
+        <Route path="/seller" component={Seller} />
       </main>
     </div>
   );

@@ -155,6 +155,7 @@ class todoList extends Component {
         });
       });
   };
+  
   PaginationPage = (activePage) => {
     var listData = [...this.state.listData];
 

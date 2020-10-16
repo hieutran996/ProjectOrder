@@ -12,6 +12,7 @@ import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
+import { NavLink } from 'react-router-dom';
 //Recoil
 import { useRecoilState } from 'recoil';
 import { openMenuState } from '../../Recoil/atom';
@@ -46,14 +47,16 @@ export default function Menubar() {
         </IconButton>
       </div>
       <Divider />
-      <List>
-        {['Order Management', 'LIST 2', 'LIST 3'].map((text, index) => (
-          <ListItem button key={text}>
-            <ListItemIcon>
-              {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-            </ListItemIcon>
-            <ListItemText primary={text} />
-          </ListItem>
+      <List className="form_link">
+        {[{path: 'order_management', name: 'Orders'}, {path: 'branch_sell', name: 'Branch Sells'}, {path: 'type_product', name: 'Type Products'}, {path: 'seller', name: 'Sellers'}].map((value, index) => (
+          <NavLink to={`/${value.path}`} key={index}>
+            <ListItem button key={value.path}>
+              <ListItemIcon>
+                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+              </ListItemIcon>
+              <ListItemText primary={value.name} />
+            </ListItem>
+          </NavLink>
         ))}
       </List>
     </Drawer>

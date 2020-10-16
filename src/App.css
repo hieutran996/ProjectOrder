@@ -100,4 +100,9 @@ body{
   background-color: #fff;
   border-color: #dee2e6;
 }
-
+.form_link  a{
+  color: rgba(0, 0, 0, 0.87)!important;
+}
+.form_link  a:hover{
+  text-decoration: none!important;
+}

@@ -21,6 +21,9 @@ import {
   KeyboardTimePicker,
   KeyboardDatePicker,
 } from '@material-ui/pickers';
+import MenuItem from '@material-ui/core/MenuItem';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
 
 
 
@@ -40,6 +43,8 @@ class ModalSend extends Component {
             client_id: "",
             loading: false,
             openDialog: false,
+            valueType: null,
+            listDataType: []
         }
     }
 
@@ -50,7 +55,31 @@ class ModalSend extends Component {
             access_token,
             client_id
         });
+        this.getListDataType()
     }
+
+    //GetList
+    getListDataType = () => {
+        fetch(`${HOST2}/api/v1/typeproducts/search-type`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        })
+        .then((response) => {
+            return response.json();
+        })
+        .then((data) => {
+        console.log(data)
+        if (data.meta.Code === 200) {
+            this.setState({
+                listDataType: data.data,
+            });
+        }
+        }).catch((error) => {
+            console.log(error)
+        });
+    };
     
 
     updateGroup = async (dataSend, event) => {
@@ -193,9 +222,28 @@ class ModalSend extends Component {
         });
     };
 
+    handleChangeType = (event) => {
+        var {dataSend} = this.state;
+        if (event.target.value === null) {
+            dataSend.width = "";
+            dataSend.height = "";
+            dataSend.weight = "";
+            dataSend.length = "";
+        } else {
+            dataSend.width = event.target.value.width;
+            dataSend.height = event.target.value.height;
+            dataSend.weight = event.target.value.weight;
+            dataSend.length = event.target.value.length;
+        }
+        this.setState({
+            dataSend,
+            valueType: event.target.value
+        });
+      };
+
     render() {
         const { classes } = this.props;
-        let {dataSend} = this.state;
+        let {dataSend,listDataType} = this.state;
         let click_handle = (event) => {
             this.updateGroup(dataSend, event);
         }
@@ -209,13 +257,35 @@ class ModalSend extends Component {
                 <Modal.Header closeButton>
                     <Modal.Title id="contained-modal-title-vcenter" className="h5">
                         Order Number: <b>{dataSend !== null && dataSend.orderNumber}</b>
+                        <span className="pl-5 pr-2" style={{'fontSize': '0.8em'}}>Select Type Product:</span>
                     </Modal.Title>
+                    <div>
+                    <FormControl className={classes.formControl}>
+                        <Select
+                        labelId="demo-simple-select-label"
+                        id="demo-simple-select"
+                        value={this.state.valueType}
+                        displayEmpty
+                        onChange={this.handleChangeType}
+                        className={classes.selectEmpty}
+                        inputProps={{ 'aria-label': 'Without label' }}
+                        >
+                        <MenuItem value={null}><em>Select</em></MenuItem>
+                        {
+                            listDataType.map((value,index) => {
+                                return(
+                                    <MenuItem key={index} value={value}>{value.name}</MenuItem>
+                                )
+                            })
+                        }
+                        </Select>
+                    </FormControl>
+                    </div>
                 </Modal.Header>
                 <Modal.Body>
                     <form id="formAddGroup">
                         <div className="col-xl-12">
                             <div className="m-widget14 row m-0 pb-3">
-
                                 <div className="form-group m-form__group col-md-6 pl-md-0">
                                     <label htmlFor="Name">Width<span className="text-danger"> *</span></label>
                                     <input type="number" className="form-control m-input" id="Width" name='width' value={dataSend !== null && dataSend.width} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)}  />

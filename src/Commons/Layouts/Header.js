@@ -69,7 +69,7 @@ export default function Header() {
           <MenuIcon />
         </IconButton>
         <Typography variant="h6" noWrap className={classes.title}>
-          Order Management
+          {/* Order Management */}
         </Typography>
         <div>
           <Avatar

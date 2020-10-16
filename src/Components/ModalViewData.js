@@ -92,7 +92,7 @@ class ModalViewData extends Component {
         return (
             <Modal
                 {...this.props}
-                size="lg"
+                size="xl"
                 aria-labelledby="contained-modal-title-vcenter"
                 centered
             >
@@ -112,6 +112,9 @@ class ModalViewData extends Component {
                                     <th>State</th>
                                     <th>Postal Code</th>
                                     <th>Phone</th>
+                                    <th>Branch</th>
+                                    <th>Type Product</th>
+                                    <th>Seller</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -121,6 +124,9 @@ class ModalViewData extends Component {
                                         <td>{dataView !== null && dataView.state}</td>
                                         <td>{dataView !== null && dataView.postalCode}</td>
                                         <td>{dataView !== null && dataView.phone}</td>
+                                        <td>{dataView !== null && dataView.branchsell}</td>
+                                        <td>{dataView !== null && dataView.typeproduct}</td>
+                                        <td>{dataView !== null && dataView.seller}</td>
                                     </tr>
                                 </tbody>
                             </Table>
