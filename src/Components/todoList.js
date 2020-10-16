@@ -467,6 +467,7 @@ class todoList extends Component {
                 <th>Address 1</th>
                 <th>Country</th>
                 <th>Shipping Time</th>
+                <th>Created Time</th>
                 <th>Status</th>
                 <th>Action</th>
               </tr>
@@ -491,6 +492,7 @@ class todoList extends Component {
                     <td>{value.address1}</td>
                     <td>{value.country}</td>
                     <td style={{"whiteSpace": "nowrap"}}>{value.beginShipping !== undefined && Moment(value.beginShipping).format("DD-MM-YYYY")}{ value.timeCompleted !== undefined && " -> " + Moment(value.timeCompleted).format("DD-MM-YYYY")}</td>
+                    <td>{Moment(value.created_at).format("DD-MM-YYYY")}</td>
                     <td>{Status}</td>
                     <td width={220} style={{"padding": "0px"}}>
                       <IconButton

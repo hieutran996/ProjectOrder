@@ -24,6 +24,7 @@ import {
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
+require('moment-weekday-calc');
 
 
 
@@ -32,7 +33,14 @@ const useStyles = (theme) => ({
       zIndex: theme.zIndex.drawer + 1,
       color: '#fff',
     },
+    selectTime: {
+        marginTop: theme.spacing(2),
+    },
+    formControl: {
+        width: '100%'
+    }
 });
+
 class ModalSend extends Component {
 
     constructor(props) {
@@ -44,6 +52,7 @@ class ModalSend extends Component {
             loading: false,
             openDialog: false,
             valueType: null,
+            valueTime: null,
             listDataType: []
         }
     }
@@ -239,6 +248,22 @@ class ModalSend extends Component {
             dataSend,
             valueType: event.target.value
         });
+    };
+
+    handleChangeTime = (event) => {
+        var {dataSend} = this.state;
+        if (event.target.value !== null) {
+            let fromDay = new Date(dataSend.beginShipping);
+            let toDay = new Date(Moment(fromDay, "DD-MM-YYYY").add(event.target.value, 'days'));
+            let lenghtWeeken = Moment(fromDay).isoWeekdayCalc(toDay,[6]);
+            dataSend.timeCompleted = new Date(Moment(fromDay, "DD-MM-YYYY").add(parseInt(event.target.value - 1) + parseInt(lenghtWeeken*2), 'days'));
+        } else {
+            dataSend.timeCompleted = null
+        }
+        this.setState({
+            dataSend,
+            valueTime: event.target.value
+        });
       };
 
     render() {
@@ -246,6 +271,13 @@ class ModalSend extends Component {
         let {dataSend,listDataType} = this.state;
         let click_handle = (event) => {
             this.updateGroup(dataSend, event);
+        }
+        var dataTime = []
+        for (let index = 5; index <= 20; index++) {
+            dataTime.push({
+                'day': `${index} Days`,
+                'value': index
+            })
         }
         return (
             <Modal
@@ -302,7 +334,7 @@ class ModalSend extends Component {
                                     <label htmlFor="Name">Length<span className="text-danger"> *</span></label>
                                     <input type="number" className="form-control m-input" id="Length" name='length' value={dataSend !== null && dataSend.length} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)}  />
                                 </div>
-                                <div className="form-group m-form__group col-md-6 pl-md-0">
+                                <div className="form-group m-form__group col-md-4 pl-md-0">
                                     <label htmlFor="Name">Begin Shipping</label>
                                     <KeyboardDatePicker
                                         disableToolbar
@@ -318,6 +350,31 @@ class ModalSend extends Component {
                                         }}
                                         className="form-control m-input mt-0"    
                                         />
+                                </div>
+                                <div className="form-group m-form__group col-md-2 pl-md-0">
+                                    <label htmlFor="Name">Select Time</label>
+                                    <div>
+                                        <FormControl className={classes.formControl}>
+                                            <Select
+                                            labelId="demo-simple-select-label"
+                                            id="demo-simple-select"
+                                            value={this.state.valueTime}
+                                            displayEmpty
+                                            onChange={this.handleChangeTime}
+                                            className={classes.selectTime}
+                                            inputProps={{ 'aria-label': 'Without label' }}
+                                            >
+                                            <MenuItem value={null}><em>Select</em></MenuItem>
+                                            {
+                                                dataTime.map((value,index) => {
+                                                    return(
+                                                        <MenuItem key={index} value={value.value}>{value.day}</MenuItem>
+                                                    )
+                                                })
+                                            }
+                                            </Select>
+                                        </FormControl>
+                                    </div>
                                 </div>
                                 <div className="form-group m-form__group col-md-6 pr-md-0">
                                     <label htmlFor="Name">Time Completed</label>

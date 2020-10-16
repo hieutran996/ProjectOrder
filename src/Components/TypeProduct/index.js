@@ -246,7 +246,7 @@ class TypeProduct extends Component {
                 <th>Height</th>
                 <th>Weight</th>
                 <th>Length</th>
-                <th>Description</th>
+                <th>Note</th>
                 <th>Action</th>
               </tr>
             </thead>
