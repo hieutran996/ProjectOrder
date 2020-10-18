@@ -1,7 +1,7 @@
 import React from 'react';
-import { makeStyles } from '@material-ui/core/styles';
+import { makeStyles,useTheme } from '@material-ui/core/styles';
+import clsx from 'clsx';
 import Drawer from '@material-ui/core/Drawer';
-import { useTheme } from '@material-ui/core/styles';
 import List from '@material-ui/core/List';
 import Divider from '@material-ui/core/Divider';
 import IconButton from '@material-ui/core/IconButton';
@@ -13,11 +13,48 @@ import ListItemText from '@material-ui/core/ListItemText';
 import InboxIcon from '@material-ui/icons/MoveToInbox';
 import MailIcon from '@material-ui/icons/Mail';
 import { NavLink } from 'react-router-dom';
+
 //Recoil
 import { useRecoilState } from 'recoil';
 import { openMenuState } from '../../Recoil/atom';
 
 const drawerWidth = 240;
+
+const useStyles = makeStyles((theme) => ({
+  drawer: {
+    width: drawerWidth,
+    flexShrink: 0,
+    whiteSpace: 'nowrap',
+  },
+  drawerOpen: {
+    width: drawerWidth,
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  drawerClose: {
+    transition: theme.transitions.create('width', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    overflowX: 'hidden',
+    width: theme.spacing(7) + 1,
+    [theme.breakpoints.up('sm')]: {
+      width: theme.spacing(9) + 1,
+    },
+    zIndex: 0
+  },
+  toolbar: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    padding: theme.spacing(0, 1),
+    // necessary for content to be below app bar
+    ...theme.mixins.toolbar,
+  },
+
+}));
 export default function Menubar() {
   const classes = useStyles();
   const theme = useTheme();
@@ -29,15 +66,19 @@ export default function Menubar() {
 
   return (
     <Drawer
-      className={classes.drawer}
-      variant="persistent"
-      anchor="left"
-      open={open}
+      variant="permanent"
+      className={clsx(classes.drawer, {
+        [classes.drawerOpen]: open,
+        [classes.drawerClose]: !open,
+      })}
       classes={{
-        paper: classes.drawerPaper,
+        paper: clsx({
+          [classes.drawerOpen]: open,
+          [classes.drawerClose]: !open,
+        }),
       }}
     >
-      <div className={classes.drawerHeader}>
+      <div className={classes.toolbar}>
         <IconButton onClick={handleDrawerClose}>
           {theme.direction === 'ltr' ? (
             <ChevronLeftIcon />
@@ -49,11 +90,19 @@ export default function Menubar() {
 
       <Divider />
       <List className="form_link">
-        {[{path: 'order_management', name: 'Orders'}, {path: 'branch_sell', name: 'Branch Sells'}, {path: 'type_product', name: 'Type Products'}, {path: 'seller', name: 'Sellers'}].map((value, index) => (
+        {[
+          {path: 'dashboard', name: 'DashBoard', image: 'dashboard.svg'},
+          {path: 'order_management', name: 'Orders', image: 'order.svg'},
+          {path: 'branch_sell', name: 'Branch Sells', image: 'share.svg'},
+          {path: 'type_product', name: 'Type Products', image: 'product.svg'},
+          {path: 'seller', name: 'Sellers', image: 'seller.svg'}
+        ].map((value, index) => (
           <NavLink to={`/${value.path}`} key={index}>
             <ListItem button key={value.path}>
               <ListItemIcon>
-                {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
+                {
+                  <img src={value.image} className="m-2" style={{'maxWidth': '25px'}} />
+                }
               </ListItemIcon>
               <ListItemText primary={value.name} />
             </ListItem>
@@ -63,41 +112,3 @@ export default function Menubar() {
     </Drawer>
   );
 }
-const useStyles = makeStyles((theme) => ({
-  root: {
-    display: 'flex',
-    flexGrow: 1,
-  },
-
-  drawer: {
-    width: drawerWidth,
-    flexShrink: 0,
-  },
-  drawerPaper: {
-    width: drawerWidth,
-  },
-  drawerHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    padding: theme.spacing(0, 1),
-    // necessary for content to be below app bar
-    ...theme.mixins.toolbar,
-    justifyContent: 'flex-end',
-  },
-  content: {
-    flexGrow: 1,
-    padding: theme.spacing(3),
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    marginLeft: -drawerWidth,
-  },
-  contentShift: {
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.easeOut,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    marginLeft: 0,
-  },
-}));

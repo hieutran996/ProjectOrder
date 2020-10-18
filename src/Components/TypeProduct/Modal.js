@@ -48,20 +48,32 @@ class ModalTypePruduct extends Component {
             })
         }).then((response) => {
             return response.json()
-        });
-        if (data.meta.Code === 200) {
-            this.setState({loading: false,});
-            toast('Add Success!', {
-                position: "top-right",
-                autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-            return this.props.onHide();
-        } else {
+        }).then((data) => {
+            if (data.meta.Code === 200) {
+                this.setState({loading: false,});
+                toast('Add Success!', {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+                return this.props.onHide();
+            } else {
+                this.setState({loading: false});
+                toast('Add Error!', {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+            }
+        }).catch((error) => {
             this.setState({loading: false});
             toast('Add Error!', {
                 position: "top-right",
@@ -72,7 +84,7 @@ class ModalTypePruduct extends Component {
                 draggable: true,
                 progress: undefined,
             });
-        }
+        });
     }
 
     HandleChangeName(e,index) {

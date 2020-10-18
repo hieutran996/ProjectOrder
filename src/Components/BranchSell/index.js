@@ -10,15 +10,14 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import swal from 'sweetalert';
 //Modal
-import Modal from "./Modal";
-import ModalEdit from "./ModalEdit";
+import Modal from './Modal';
+import ModalEdit from './ModalEdit';
 //importExcel
-import {HOST,HOST2} from '../../Config'
-import { withStyles  } from '@material-ui/core/styles';
+import { HOST, HOST2 } from '../../Config';
+import { withStyles } from '@material-ui/core/styles';
 
 import Backdrop from '@material-ui/core/Backdrop';
 import CircularProgress from '@material-ui/core/CircularProgress';
-
 
 const useStyles = (theme) => ({
   button: {
@@ -40,18 +39,18 @@ const useStyles = (theme) => ({
   },
   bg_processing: {
     background: '#00FF00',
-    color: "#fff"
+    color: '#fff',
   },
   bg_shipping: {
     background: '#FE2EF7',
-    color: "#fff"
+    color: '#fff',
   },
   bg_hold_on: {
     background: '#F7FE2E',
   },
   bg_completed: {
     background: '#0000FF',
-    color: "#fff"
+    color: '#fff',
   },
   formControl: {
     margin: theme.spacing(1),
@@ -84,9 +83,9 @@ class BranchSell extends Component {
       itemData: [
         {
           name: '',
-          note: ''
-        }
-      ]
+          note: '',
+        },
+      ],
     };
 
     this.itemsPerPage = 10;
@@ -98,28 +97,32 @@ class BranchSell extends Component {
 
   //GetList
   getListData = () => {
-      fetch(`${HOST2}/api/v1/branchsells/search-branch`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-      })
+    fetch(`${HOST2}/api/v1/branchsells/search-branch`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
       .then((response) => {
-          return response.json();
+        return response.json();
       })
       .then((data) => {
-        console.log(data)
+        console.log(data);
         if (data.meta.Code === 200) {
-          this.setState({
-            listData: data.data,
-            loading: false
-          }, () => {
-              this.PaginationPage(this.state.activePage)
-          });
+          this.setState(
+            {
+              listData: data.data,
+              loading: false,
+            },
+            () => {
+              this.PaginationPage(this.state.activePage);
+            }
+          );
         }
-      }).catch((error) => {
+      })
+      .catch((error) => {
         this.setState({
-          loading: false
+          loading: false,
         });
       });
   };
@@ -157,148 +160,163 @@ class BranchSell extends Component {
     );
   };
 
-
   modalClose = () => {
     this.setState({
-        modalShow: false,
-        modalEdit: false
+      modalShow: false,
+      modalEdit: false,
     });
     this.getListData();
-  }
+  };
 
   render() {
     const { classes } = this.props;
     return (
-      <div className="row">
-        <div className="col-md-6 pb-3">
-          <Input
-            placeholder="Enter name..."
-            className={classes.input}
-            name="search"
-            value={this.state.valueSearch}
-            onChange={(event) => {
-              var { valueSearch } = this.state;
-              valueSearch = event.target.value;
-              this.setState({
-                valueSearch,
-              });
-            }}
-            onKeyUp={(event) => {
-              if (event.key === 'Enter') {
-                this.setState(
-                  {
-                    loading: true,
-                    activePage: 1,
-                  },
-                  () => {
-                    this.getListData();
-                  }
-                );
-              }
-            }}
-            inputProps={{ 'aria-label': 'description' }}
-          />
-          <Button
-            variant="contained"
-            color="primary"
-            className={classes.buttonSearch}
-            onClick={() => {
-              this.setState(
-                {
-                  activePage: 1,
-                  loading: true
-                },
-                () => {
-                  this.getListData();
-                }
-              );
-            }}
-          >
-            Search
-          </Button>
+      <div className="m-portlet m-portlet--full-height ">
+        <div className="m-portlet__head">
+          <div className="m-portlet__head-caption">
+            <div className="m-portlet__head-title">
+              <h3 className="m-portlet__head-text">Branch Sell</h3>
+            </div>
+          </div>
         </div>
-        <div className="text-right col-md-6">
-            <Button
+        <div className="m-portlet__body">
+          <div className="row">
+            <div className="col-md-6 pb-3">
+              <Input
+                placeholder="Enter name..."
+                className={classes.input}
+                name="search"
+                value={this.state.valueSearch}
+                onChange={(event) => {
+                  var { valueSearch } = this.state;
+                  valueSearch = event.target.value;
+                  this.setState({
+                    valueSearch,
+                  });
+                }}
+                onKeyUp={(event) => {
+                  if (event.key === 'Enter') {
+                    this.setState(
+                      {
+                        loading: true,
+                        activePage: 1,
+                      },
+                      () => {
+                        this.getListData();
+                      }
+                    );
+                  }
+                }}
+                inputProps={{ 'aria-label': 'description' }}
+              />
+              <Button
                 variant="contained"
                 color="primary"
                 className={classes.buttonSearch}
                 onClick={() => {
-                    this.setState({
-                        itemData: [
-                          {
-                            name: '',
-                            note: ''
-                          }
-                        ],
-                        modalShow: true
-                    });
+                  this.setState(
+                    {
+                      activePage: 1,
+                      loading: true,
+                    },
+                    () => {
+                      this.getListData();
+                    }
+                  );
                 }}
-            >
+              >
+                Search
+              </Button>
+            </div>
+            <div className="text-right col-md-6">
+              <Button
+                variant="contained"
+                color="primary"
+                className={classes.buttonSearch}
+                onClick={() => {
+                  this.setState({
+                    itemData: [
+                      {
+                        name: '',
+                        note: '',
+                      },
+                    ],
+                    modalShow: true,
+                  });
+                }}
+              >
                 Add New
-            </Button>
-        </div>
-        <div className="col-12">
-          <Table bordered hover>
-            <thead>
-              <tr>
-                <th>STT</th>
-                <th>Name</th>
-                <th>Note</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {this.state.crrData.map((value, index) => {
-                return (
-                  <tr key={index}>
-                    <td width={80} >{index + this.state.offset + 1}</td>
-                    <td>{value.name}</td>
-                    <td>{value.note}</td>
-                    <td width={120} style={{"padding": "0px"}}>
-                      <IconButton
-                          aria-label="edit"
-                          color="primary"
-                          onClick={() => {
-                            this.setState({
-                              dataEdit: {
-                                "name": value.name,
-                                "note": value.note
-                              },
-                              modalEdit: true
-                            });
-                          }}
-                        >
-                          <EditIcon />
-                        </IconButton>
-                      <IconButton
-                          aria-label="delete"
-                          color="primary"
-                          onClick={() => {
-                            swal({
-                              title: "Are you sure!",
-                              text: "Are you sure you want to delete " + value.name,
-                              icon: "warning",
-                              buttons: true,
-                            })
-                              .then(name => {
+              </Button>
+            </div>
+            <div className="col-12">
+              <Table bordered hover>
+                <thead>
+                  <tr>
+                    <th>STT</th>
+                    <th>Name</th>
+                    <th>Note</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {this.state.crrData.map((value, index) => {
+                    return (
+                      <tr key={index}>
+                        <td width={80}>{index + this.state.offset + 1}</td>
+                        <td>{value.name}</td>
+                        <td>{value.note}</td>
+                        <td width={120} style={{ padding: '0px' }}>
+                          <IconButton
+                            aria-label="edit"
+                            color="primary"
+                            onClick={() => {
+                              this.setState({
+                                dataEdit: {
+                                  name: value.name,
+                                  note: value.note,
+                                },
+                                modalEdit: true,
+                              });
+                            }}
+                          >
+                            <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            aria-label="delete"
+                            color="primary"
+                            onClick={() => {
+                              swal({
+                                title: 'Are you sure!',
+                                text:
+                                  'Are you sure you want to delete ' +
+                                  value.name,
+                                icon: 'warning',
+                                buttons: true,
+                              })
+                                .then((name) => {
                                   if (!name) throw null;
-                                  return fetch(`${HOST2}/api/v1/branchsells/delete`, {
+                                  return fetch(
+                                    `${HOST2}/api/v1/branchsells/delete`,
+                                    {
                                       method: 'POST',
                                       headers: {
-                                        'Content-type': 'application/json; charset=UTF-8'
+                                        'Content-type':
+                                          'application/json; charset=UTF-8',
                                       },
                                       body: JSON.stringify({
-                                        "name": value.name
-                                      })
-                                  })
-                              })
-                              .then(response => {
-                                  return response.json()
-                              }).then(data => {
-                                  console.log(data)
+                                        name: value.name,
+                                      }),
+                                    }
+                                  );
+                                })
+                                .then((response) => {
+                                  return response.json();
+                                })
+                                .then((data) => {
+                                  console.log(data);
                                   if (data.meta.Code === 200) {
                                     toast('Delete Success!', {
-                                      position: "top-right",
+                                      position: 'top-right',
                                       autoClose: 3000,
                                       hideProgressBar: false,
                                       closeOnClick: true,
@@ -308,45 +326,48 @@ class BranchSell extends Component {
                                     });
                                     this.getListData();
                                   }
-                              }).catch((error) => {
+                                })
+                                .catch((error) => {
                                   if (error) {
-                                      swal("Error", "error", "error");
+                                    swal('Error', 'error', 'error');
                                   } else {
-                                      swal.stopLoading();
-                                      swal.close();
+                                    swal.stopLoading();
+                                    swal.close();
                                   }
-                              })
-                          }}
-                        >
-                          <DeleteForeverIcon />
-                        </IconButton>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </Table>
-          <Modal
-              data={this.state.itemData}
-              show={this.state.modalShow}
-              onHide={this.modalClose}
-          />
-          <ModalEdit
-              data={this.state.dataEdit}
-              show={this.state.modalEdit}
-              onHide={this.modalClose}
-          />
-          <ToastContainer />
-          <Backdrop className={classes.backdrop} open={this.state.loading}>
-              <CircularProgress color="inherit" />
-          </Backdrop>
-          <Pagination
-            activePage={this.state.activePage}
-            itemsCountPerPage={this.itemsPerPage}
-            totalItemsCount={this.state.totalItem}
-            pageRangeDisplayed={5}
-            onChange={this.handlePageChange}
-          />
+                                });
+                            }}
+                          >
+                            <DeleteForeverIcon />
+                          </IconButton>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </Table>
+              <Modal
+                data={this.state.itemData}
+                show={this.state.modalShow}
+                onHide={this.modalClose}
+              />
+              <ModalEdit
+                data={this.state.dataEdit}
+                show={this.state.modalEdit}
+                onHide={this.modalClose}
+              />
+              <ToastContainer />
+              <Backdrop className={classes.backdrop} open={this.state.loading}>
+                <CircularProgress color="inherit" />
+              </Backdrop>
+              <Pagination
+                activePage={this.state.activePage}
+                itemsCountPerPage={this.itemsPerPage}
+                totalItemsCount={this.state.totalItem}
+                pageRangeDisplayed={5}
+                onChange={this.handlePageChange}
+              />
+            </div>
+          </div>
         </div>
       </div>
     );

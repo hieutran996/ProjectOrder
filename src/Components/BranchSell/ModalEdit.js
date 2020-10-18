@@ -37,7 +37,7 @@ class ModalEditBranchSell extends Component {
     editBranchSell = async (dataBranchSell, event) => {
         event.preventDefault();
         this.setState({loading: true});
-        let data = await fetch(`${HOST2}/api/v1/branchsells`, {
+        await fetch(`${HOST2}/api/v1/branchsells`, {
             method: 'PUT',
             headers: {
                 'Accept': 'application/json',
@@ -46,20 +46,32 @@ class ModalEditBranchSell extends Component {
             body: JSON.stringify(dataBranchSell)
         }).then((response) => {
             return response.json()
-        });
-        if (data.meta.Code === 200) {
-            this.setState({loading: false,});
-            toast('Edit Success!', {
-                position: "top-right",
-                autoClose: 2000,
-                hideProgressBar: false,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                progress: undefined,
-            });
-            return this.props.onHide();
-        } else {
+        }).then((data) => {
+            if (data.meta.Code === 200) {
+                this.setState({loading: false,});
+                toast('Edit Success!', {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+                return this.props.onHide();
+            } else {
+                this.setState({loading: false});
+                toast('Edit Error!', {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+            }
+        }).catch((error) => {
             this.setState({loading: false});
             toast('Edit Error!', {
                 position: "top-right",
@@ -70,7 +82,8 @@ class ModalEditBranchSell extends Component {
                 draggable: true,
                 progress: undefined,
             });
-        }
+        });
+        
     }
 
     HandleChangeName(e) {
@@ -113,7 +126,7 @@ class ModalEditBranchSell extends Component {
         return (
             <Modal
                 {...this.props}
-                size="lg"
+                size="md"
                 aria-labelledby="contained-modal-title-vcenter"
                 centered
             >
@@ -124,14 +137,14 @@ class ModalEditBranchSell extends Component {
                 </Modal.Header>
                 <Modal.Body>
                     <form id="formAddGroup">
-                        <div className="m-widget14 row m-0 pb-3">
-                            <div className="form-group m-form__group col-md-6 pl-md-0">
-                                <label htmlFor="Name">Name<span className="text-danger"> *</span></label>
-                                <input type="text" className="form-control m-input" id="name" name='name' value={dataBranchSell  !== null && dataBranchSell.name} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChangeName(e)}  />
+                        <div className="row m-0 pb-3">
+                            <div className="form-group m-form__group col-md-12 p-0">
+                                <label htmlFor="Name">Name</label>
+                                <input type="text" className="form-control m-input" id="name" name='name' value={dataBranchSell  !== null && dataBranchSell.name} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChangeName(e)}  disabled/>
                             </div>
-                            <div className="form-group m-form__group col-md-6 pr-md-0">
+                            <div className="form-group m-form__group col-md-12 p-0">
                                 <label htmlFor="Note">Note<span className="text-danger"></span></label>
-                                <input type="text" className="form-control m-input" id="note" name='note' value={dataBranchSell  !== null && dataBranchSell.note} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChangeNote(e)}  />
+                                <textarea rows="4" className="form-control m-input" id="note" name='note' value={dataBranchSell  !== null && dataBranchSell.note} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChangeNote(e)}  />
                             </div>
                         </div>
                         <Backdrop className={classes.backdrop} open={this.state.loading}>
