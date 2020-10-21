@@ -70,7 +70,7 @@ export const chartDay = {
         enabled: false,
     },
     tooltip: {
-        xDateFormat: '%Y-%m-%d',
+        xDateFormat: '%d-%m-%Y',
         shared: true,
         backgroundColor: 'rgba(0, 0, 0, 0.85)',
         style: {

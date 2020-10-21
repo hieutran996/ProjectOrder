@@ -402,9 +402,9 @@ class todoList extends Component {
                   <MenuItem value="">
                     <em>All</em>
                   </MenuItem>
-                  <MenuItem value={0}>Processing</MenuItem>
-                  <MenuItem value={1}>Shipping</MenuItem>
-                  <MenuItem value={2}>Hold On</MenuItem>
+                  <MenuItem value={0}>Waitting</MenuItem>
+                  <MenuItem value={2}>Shipping</MenuItem>
+                  <MenuItem value={1}>Delay</MenuItem>
                   <MenuItem value={3}>Completed</MenuItem>
                 </Select>
               </FormControl>

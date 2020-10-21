@@ -22,7 +22,7 @@ export const chartColumn = {
         }
     },
     xAxis: {
-        categories: ['Waitting', 'Shipping', 'Delay'],
+        categories: ['Waitting', 'Shipping', 'Delay', 'Completed'],
         labels: {
             skew3d: true,
             style: {
@@ -90,8 +90,8 @@ export const chartColumn = {
 
     },
     series: [{
-        name: 'Column',
-        data: [0,0,0],
+        name: 'Orders for day',
+        data: [0,0,0,0],
         color: '#ffc241'
     }],
     navigation: {

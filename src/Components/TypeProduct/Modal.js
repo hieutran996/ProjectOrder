@@ -148,10 +148,10 @@ class ModalTypePruduct extends Component {
                             <thead>
                             <tr>
                                 <th>Name<span className="text-danger"> *</span></th>
-                                <th width={120}>Width<span className="text-danger"></span></th>
-                                <th width={120}>Height<span className="text-danger"></span></th>
-                                <th width={120}>Weight<span className="text-danger"></span></th>
-                                <th width={120}>Length<span className="text-danger"></span></th>
+                                <th width={120}>Width (mm)<span className="text-danger"> *</span></th>
+                                <th width={120}>Height (mm)<span className="text-danger"> *</span></th>
+                                <th width={120}>Weight (gram)<span className="text-danger"> *</span></th>
+                                <th width={120}>Length (mm)<span className="text-danger"> *</span></th>
                                 <th>Note<span className="text-danger"></span></th>
                                 <th>
                                     <IconButton

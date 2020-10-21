@@ -96,14 +96,15 @@ class BranchSell extends Component {
       lengWaitting: 0,
       lengShipping: 0,
       lengDelay: 0,
-      //ApexChartDonut
-      series: [44, 55, 13, 43, 22],
-      options: {
+      lengCompleted: 0,
+      //ChartSeller
+      seriesSeller: [],
+      optionsSeller: {
         chart: {
           width: 380,
           type: 'pie',
         },
-        labels: ['Team A', 'Team B', 'Team C', 'Team D', 'Team E'],
+        labels: [],
         responsive: [
           {
             breakpoint: 480,
@@ -118,78 +119,232 @@ class BranchSell extends Component {
           },
         ],
       },
+      //ChartBranchSell
+      seriesBranchSell: [],
+      optionsBranchSell: {
+        chart: {
+          width: 380,
+          type: 'pie',
+        },
+        labels: [],
+        responsive: [
+          {
+            breakpoint: 480,
+            options: {
+              chart: {
+                width: 200,
+              },
+              legend: {
+                position: 'bottom',
+              },
+            },
+          },
+        ],
+      },
+      //ChartTypeProduct
+      seriesTypeProduct: [],
+      optionsTypeProduct: {
+        chart: {
+          width: 380,
+          type: 'pie',
+        },
+        labels: [],
+        responsive: [
+          {
+            breakpoint: 480,
+            options: {
+              chart: {
+                width: 200,
+              },
+              legend: {
+                position: 'bottom',
+              },
+            },
+          },
+        ],
+      },
+      stepTime: 'week',
       //Chart Line
       chartOptionsLine: chartDay,
       //Chart Column
       chartOptionsColumn: chartColumn,
       //Area Chart
-      seriesArea: [{
-        name: 'series1',
-        data: [31, 40, 28, 51, 42, 109, 100]
-      }],
-      optionsArea: {
-        chart: {
-          height: 350,
-          type: 'area'
-        },
-        dataLabels: {
-          enabled: false
-        },
-        stroke: {
-          curve: 'smooth'
-        },
-        xaxis: {
-          type: 'datetime',
-          categories: ["2018-09-19T00:00:00.000Z", "2018-09-19T01:30:00.000Z", "2018-09-19T02:30:00.000Z", "2018-09-19T03:30:00.000Z", "2018-09-19T04:30:00.000Z", "2018-09-19T05:30:00.000Z", "2018-09-19T06:30:00.000Z"]
-        },
-        tooltip: {
-          x: {
-            format: 'dd/MM/yy HH:mm'
-          },
-        },
-      },
     };
 
     this.itemsPerPage = 10;
   }
 
   componentDidMount() {
+    this.getOrder();
     this.getAllStatus();
-    var data = [
-      [Date.UTC(2020, 5 - 1, 20), 53],
-      [Date.UTC(2020, 5 - 1, 21), 90],
-      [Date.UTC(2020, 5 - 1, 22), 72],
-      [Date.UTC(2020, 5 - 1, 23), 62],
-      [Date.UTC(2020, 5 - 1, 24), 82],
-      [Date.UTC(2020, 5 - 1, 25), 102],
-      [Date.UTC(2020, 5 - 1, 26), 42],
-    ]
-    this.setState({
-      chartOptionsLine: {
-        title: {
-            text: '',
-        },
-        xAxis: {
-            type: 'datetime',
-            labels: {
-                format: '{value:%d/%m}',
-            }
-        },
-        series: [{
-            type: 'area',
-            name: 'Traffic',
-            data: data
-        }],
-      },
-      chartOptionsColumn: {
-        series: [{
-            name: 'Column',
-            data: [10,30,20],
-            color: '#ffc241'
-        }],
-      }
-    });
   }
+
+  //Get Order
+  getOrder = () => {
+    fetch(
+      `${HOST2}/api/v1/orders/number-orders?steptime=${encodeURIComponent(this.state.stepTime)}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
+        if (data.meta.Code === 200) {
+          //Statistics 
+          var dataChart = []
+          //Seller
+          var seriesSeller = []
+          var labelsSeller = []
+          //Branchsel
+          var seriesBranchSell = []
+          var labelsBranchSell = []
+          //TypeProduct
+          var seriesTypeProduct = []
+          var labelsTypeProduct = []
+          for (let index = 0; index < data.data.orders.length; index++) {
+            var year = new Date(data.data.orders[index].key).getFullYear();
+            var month = new Date(data.data.orders[index].key).getMonth();
+            var date = new Date(data.data.orders[index].key).getDate();
+
+            if (this.state.stepTime === 'year') {
+              dataChart.push([Date.UTC(year, month), data.data.orders[index].value])
+            } else {
+              dataChart.push([Date.UTC(year, month, date), data.data.orders[index].value])
+            }
+            
+          }
+          for (let index = 0; index < data.data.sellers.length; index++) {
+            seriesSeller.push(data.data.sellers[index].value)
+            labelsSeller.push(data.data.sellers[index].key)
+          }
+          for (let index = 0; index < data.data.branchsells.length; index++) {
+            seriesBranchSell.push(data.data.branchsells[index].value)
+            labelsBranchSell.push(data.data.branchsells[index].key)
+          }
+          for (let index = 0; index < data.data.typeproducts.length; index++) {
+            seriesTypeProduct.push(data.data.typeproducts[index].value)
+            labelsTypeProduct.push(data.data.typeproducts[index].key)
+          }
+
+          var formatTime = ""
+          var formatTimeTooltip = ""
+          if (this.state.stepTime === 'year') {
+            formatTime = "{value:%m/%Y}"
+            formatTimeTooltip = "%m-%Y"
+          } else if(this.state.stepTime === 'month'){
+            formatTime = "{value:%d/%m}"
+            formatTimeTooltip = "%d-%m-%Y"
+          } else {
+            formatTime = "{value:%d/%m}"
+            formatTimeTooltip = "%d-%m-%Y"
+          }
+          this.setState({
+            loading: false,
+            chartOptionsLine: {
+              title: {
+                  text: '',
+              },
+              xAxis: {
+                  type: 'datetime',
+                  labels: {
+                      format: formatTime,
+                  }
+              },
+              tooltip: {
+                xDateFormat: formatTimeTooltip,
+                shared: true,
+                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                style: {
+                    color: '#b1b1b5'
+                }
+            },
+              series: [{
+                  type: 'area',
+                  name: 'Completed orders',
+                  data: dataChart
+              }],
+            },
+            //ChartSeller
+            seriesSeller,
+            optionsSeller: {
+              chart: {
+                width: 380,
+                type: 'pie',
+              },
+              labels: labelsSeller,
+              responsive: [
+                {
+                  breakpoint: 480,
+                  options: {
+                    chart: {
+                      width: 200,
+                    },
+                    legend: {
+                      position: 'bottom',
+                    },
+                  },
+                },
+              ],
+            },
+            //ChartBranchSell
+            seriesBranchSell,
+            optionsBranchSell: {
+              chart: {
+                width: 380,
+                type: 'pie',
+              },
+              labels: labelsBranchSell,
+              responsive: [
+                {
+                  breakpoint: 480,
+                  options: {
+                    chart: {
+                      width: 200,
+                    },
+                    legend: {
+                      position: 'bottom',
+                    },
+                  },
+                },
+              ],
+            },
+            //ChartTypeProduct
+            seriesTypeProduct,
+            optionsTypeProduct: {
+              chart: {
+                width: 380,
+                type: 'pie',
+              },
+              labels: labelsTypeProduct,
+              responsive: [
+                {
+                  breakpoint: 480,
+                  options: {
+                    chart: {
+                      width: 200,
+                    },
+                    legend: {
+                      position: 'bottom',
+                    },
+                  },
+                },
+              ],
+            },
+          });
+        }
+      })
+      .catch((error) => {
+        this.setState({
+          loading: false,
+        });
+      });
+  };
 
   //GetList
   getListData = () => {
@@ -244,6 +399,17 @@ class BranchSell extends Component {
                 this.PaginationPage(this.state.activePage);
               }
             );
+          } else if (this.state.value === 3) {
+            this.setState(
+              {
+                lengCompleted: data.data.length,
+                loading: false,
+                listData: data.data,
+              },
+              () => {
+                this.PaginationPage(this.state.activePage);
+              }
+            );
           }
         }
       })
@@ -253,11 +419,15 @@ class BranchSell extends Component {
         });
       });
   };
-
-  getAllStatus = () => {
+  getAllStatus = async  () => {
     this.setState({ loading: true });
-    for (let index = 0; index <= 2; index++) {
-      fetch(
+    var lengWaitting = 0;
+    var lengDelay = 0;
+    var lengShipping = 0;
+    var lengCompleted = 0;
+    var listData = []
+    for (let index = 0; index <= 3; index++) {
+      await fetch(
         `${HOST2}/api/v1/orders/search?status=${encodeURIComponent(
           parseInt(index)
         )}`,
@@ -275,28 +445,14 @@ class BranchSell extends Component {
           console.log(data);
           if (data.meta.Code === 200) {
             if (index === 0) {
-              this.setState(
-                {
-                  lengWaitting: data.data.length,
-                  loading: false,
-                  listData: data.data,
-                },
-                () => {
-                  this.PaginationPage(this.state.activePage);
-                }
-              );
+              lengWaitting = data.data.length
+              listData = data.data
             } else if (index === 1) {
-              this.setState({
-                lengDelay: data.data.length,
-                loading: false,
-                listData: data.data,
-              });
-            } else {
-              this.setState({
-                lengShipping: data.data.length,
-                loading: false,
-                listData: data.data,
-              });
+              lengDelay = data.data.length
+            } else if (index === 2) {
+              lengShipping = data.data.length
+            } else if (index === 3) {
+              lengCompleted = data.data.length
             }
           }
         }).catch((error) => {
@@ -305,6 +461,23 @@ class BranchSell extends Component {
           });
         });
     }
+    this.setState({
+      lengWaitting,
+      lengShipping,
+      lengDelay,
+      lengCompleted,
+      loading: false,
+      listData,
+      chartOptionsColumn: {
+        series: [{
+            name: 'Orders for day',
+            data: [lengWaitting,lengShipping,lengDelay,lengCompleted],
+            color: '#ffc241'
+        }],
+      }
+    },() => {
+      this.PaginationPage(this.state.activePage);
+    });
   };
 
   PaginationPage = (activePage) => {
@@ -431,6 +604,30 @@ class BranchSell extends Component {
                       Delay{' '}
                       <span className="m-badge m-badge--danger m-badge--wide p-0">
                         {this.state.lengDelay}
+                      </span>
+                    </a>
+                  </li>
+                  <li
+                    className="nav-item"
+                    onClick={() => {
+                      this.setState(
+                        {
+                          value: 3,
+                        },
+                        () => {
+                          this.getListData();
+                        }
+                      );
+                    }}
+                  >
+                    <a
+                      className="nav-link"
+                      data-toggle="tab"
+                      href="#m_tabs_1_3"
+                    >
+                      Completed{' '}
+                      <span className="m-badge m-badge--accent m-badge--wide p-0">
+                        {this.state.lengCompleted}
                       </span>
                     </a>
                   </li>
@@ -682,7 +879,7 @@ class BranchSell extends Component {
               <div className="m-portlet__head">
                 <div className="m-portlet__head-caption">
                   <div className="m-portlet__head-title">
-                    <h3 className="m-portlet__head-text">Column</h3>
+                    <h3 className="m-portlet__head-text">Orders for day</h3>
                   </div>
                 </div>
               </div>
@@ -703,7 +900,7 @@ class BranchSell extends Component {
               <div className="m-portlet__head">
                 <div className="m-portlet__head-caption">
                   <div className="m-portlet__head-title">
-                    <h3 className="m-portlet__head-text">Order statistics</h3>
+                    <h3 className="m-portlet__head-text">Statistics for completed orders</h3>
                   </div>
                 </div>
                 <div className="m-portlet__head-tools">
@@ -717,16 +914,14 @@ class BranchSell extends Component {
                         data-toggle="tab"
                         href="#m_widget2_tab1_content"
                         role="tab"
-                      >
-                        Today
-                      </a>
-                    </li>
-                    <li className="nav-item m-tabs__item">
-                      <a
-                        className="nav-link m-tabs__link"
-                        data-toggle="tab"
-                        href="#m_widget2_tab2_content1"
-                        role="tab"
+                        onClick={() => {
+                          this.setState({
+                            stepTime: 'week',
+                            loading: true
+                          }, () => {
+                            this.getOrder()
+                          });
+                        }}
                       >
                         Week
                       </a>
@@ -735,10 +930,36 @@ class BranchSell extends Component {
                       <a
                         className="nav-link m-tabs__link"
                         data-toggle="tab"
-                        href="#m_widget2_tab3_content1"
+                        href="#m_widget2_tab2_content1"
                         role="tab"
+                        onClick={() => {
+                          this.setState({
+                            stepTime: 'month',
+                            loading: true
+                          }, () => {
+                            this.getOrder()
+                          });
+                        }}
                       >
                         Month
+                      </a>
+                    </li>
+                    <li className="nav-item m-tabs__item">
+                      <a
+                        className="nav-link m-tabs__link"
+                        data-toggle="tab"
+                        href="#m_widget2_tab3_content1"
+                        role="tab"
+                        onClick={() => {
+                          this.setState({
+                            stepTime: 'year',
+                            loading: true
+                          }, () => {
+                            this.getOrder()
+                          });
+                        }}
+                      >
+                        Year
                       </a>
                     </li>
                   </ul>
@@ -761,14 +982,14 @@ class BranchSell extends Component {
               <div className="m-portlet__head">
                 <div className="m-portlet__head-caption">
                   <div className="m-portlet__head-title">
-                    <h3 className="m-portlet__head-text">Country</h3>
+                    <h3 className="m-portlet__head-text">Seller</h3>
                   </div>
                 </div>
               </div>
               <div className="m-portlet__body">
                 <Chart
-                  options={this.state.options}
-                  series={this.state.series}
+                  options={this.state.optionsSeller}
+                  series={this.state.seriesSeller}
                   type="pie"
                   width="100%"
                 />
@@ -788,8 +1009,8 @@ class BranchSell extends Component {
               </div>
               <div className="m-portlet__body">
                 <Chart
-                  options={this.state.options}
-                  series={this.state.series}
+                  options={this.state.optionsBranchSell}
+                  series={this.state.seriesBranchSell}
                   type="pie"
                   width="100%"
                 />
@@ -809,8 +1030,8 @@ class BranchSell extends Component {
               </div>
               <div className="m-portlet__body">
                 <Chart
-                  options={this.state.options}
-                  series={this.state.series}
+                  options={this.state.optionsTypeProduct}
+                  series={this.state.seriesTypeProduct}
                   type="pie"
                   width="100%"
                 />
