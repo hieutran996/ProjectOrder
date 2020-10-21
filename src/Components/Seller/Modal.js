@@ -93,6 +93,12 @@ class ModalBranchSell extends Component {
         this.setState({ dataBranchSell });
     }
 
+    HandleChangeNote(e,index) {
+        var {dataBranchSell} = this.state;
+        dataBranchSell[index][e.target.name] = e.target.value;
+        this.setState({ dataBranchSell });
+    }
+
     componentWillReceiveProps(nextProps) {
         if (nextProps.show === true) {
             //dataBranchSell
@@ -163,7 +169,7 @@ class ModalBranchSell extends Component {
                                         return(
                                             <tr key={index}>
                                                 <td><input type="text" className="form-control m-input" id="name" name='name' value={val.name} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChange(e,index)}  /></td>
-                                                <td><input type="text" className="form-control m-input" id="note" name='note' value={val.note} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChange(e,index)}  /></td>
+                                                <td><input type="text" className="form-control m-input" id="note" name='note' value={val.note} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.HandleChangeNote(e,index)}  /></td>
                                                 <td width={50}>
                                                     {
                                                         dataBranchSell.length > 1
