@@ -337,19 +337,19 @@ class ModalSend extends Component {
                         <div className="col-xl-12 p-0">
                             <div className="row m-0 pb-3">
                                 <div className="form-group m-form__group col-md-6 pl-md-0">
-                                    <label htmlFor="Name">Width<span className="text-danger"> *</span></label>
+                                    <label htmlFor="Name">Width (mm)<span className="text-danger"> *</span></label>
                                     <input type="number" className="form-control m-input" id="Width" name='width' value={dataSend !== null && dataSend.width} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)}  />
                                 </div>
                                 <div className="form-group m-form__group col-md-6 pr-md-0">
-                                    <label htmlFor="Name">Height<span className="text-danger"> *</span></label>
+                                    <label htmlFor="Name">Height (mm)<span className="text-danger"> *</span></label>
                                     <input type="number" className="form-control m-input" id="Height" name='height' value={dataSend !== null && dataSend.height} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)}  />
                                 </div>
                                 <div className="form-group m-form__group col-md-6 pl-md-0">
-                                    <label htmlFor="Name">Weight<span className="text-danger"> *</span></label>
+                                    <label htmlFor="Name">Weight (gram)<span className="text-danger"> *</span></label>
                                     <input type="number" className="form-control m-input" id="Weight" name='weight' value={dataSend !== null && dataSend.weight} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)} />
                                 </div>
                                 <div className="form-group m-form__group col-md-6 pr-md-0">
-                                    <label htmlFor="Name">Length<span className="text-danger"> *</span></label>
+                                    <label htmlFor="Name">Length (mm)<span className="text-danger"> *</span></label>
                                     <input type="number" className="form-control m-input" id="Length" name='length' value={dataSend !== null && dataSend.length} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)}  />
                                 </div>
                                 <div className="form-group m-form__group col-md-4 pl-md-0">

@@ -258,10 +258,10 @@ class TypeProduct extends Component {
                   <tr>
                     <th>STT</th>
                     <th>Name</th>
-                    <th>Width</th>
-                    <th>Height</th>
-                    <th>Weight</th>
-                    <th>Length</th>
+                    <th>Width (mm)</th>
+                    <th>Height (mm)</th>
+                    <th>Weight (gram)</th>
+                    <th>Length (mm)</th>
                     <th>Note</th>
                     <th>Action</th>
                   </tr>

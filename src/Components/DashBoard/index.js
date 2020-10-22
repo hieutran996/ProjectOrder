@@ -92,6 +92,7 @@ class BranchSell extends Component {
       showFirst: 0,
       showLast: 0,
       loading: true,
+      loadingGetOrder: false,
       value: 0,
       lengWaitting: 0,
       lengShipping: 0,
@@ -171,12 +172,13 @@ class BranchSell extends Component {
       //Area Chart
     };
 
-    this.itemsPerPage = 10;
+    this.itemsPerPage = 5;
   }
 
   componentDidMount() {
     this.getOrder();
     this.getAllStatus();
+    this.getOrderForDay();
   }
 
   //Get Order
@@ -245,7 +247,7 @@ class BranchSell extends Component {
             formatTimeTooltip = "%d-%m-%Y"
           }
           this.setState({
-            loading: false,
+            loadingGetOrder: false,
             chartOptionsLine: {
               title: {
                   text: '',
@@ -341,10 +343,61 @@ class BranchSell extends Component {
       })
       .catch((error) => {
         this.setState({
-          loading: false,
+          loadingGetOrder: false,
         });
       });
   };
+
+  //Get Order for day
+  getOrderForDay = () => {
+    fetch(
+      `${HOST2}/api/v1/orders/search?begin_time=${encodeURIComponent(
+        Moment(new Date()).format('YYYY-MM-DD 00:00:00')
+      )}&end_time=${encodeURIComponent(
+        Moment(new Date()).format('YYYY-MM-DD 23:59:59')
+      )}`,
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        if (data.meta.Code === 200) {
+          let lengWaitting = 0;
+          let lengDelay = 0;
+          let lengShipping = 0;
+          let lengCompleted = 0;
+          for (let index = 0; index < data.data.length; index++) {
+            if (data.data[index].status === 0) {
+              lengWaitting++
+            } else if (data.data[index].status === 1) {
+              lengDelay++
+            } else if (data.data[index].status === 2) {
+              lengShipping++
+            } else if (data.data[index].status === 3) {
+              lengCompleted++
+            }
+          }
+          this.setState({
+            chartOptionsColumn: {
+              series: [{
+                  name: 'Orders for day',
+                  data: [lengWaitting,lengShipping,lengDelay,lengCompleted],
+                  color: '#ffc241'
+              }],
+            }
+          });
+        }
+      })
+      .catch((error) => {
+
+      });
+  }; 
 
   //GetList
   getListData = () => {
@@ -424,9 +477,8 @@ class BranchSell extends Component {
     var lengWaitting = 0;
     var lengDelay = 0;
     var lengShipping = 0;
-    var lengCompleted = 0;
     var listData = []
-    for (let index = 0; index <= 3; index++) {
+    for (let index = 0; index <= 2; index++) {
       await fetch(
         `${HOST2}/api/v1/orders/search?status=${encodeURIComponent(
           parseInt(index)
@@ -451,8 +503,6 @@ class BranchSell extends Component {
               lengDelay = data.data.length
             } else if (index === 2) {
               lengShipping = data.data.length
-            } else if (index === 3) {
-              lengCompleted = data.data.length
             }
           }
         }).catch((error) => {
@@ -465,16 +515,8 @@ class BranchSell extends Component {
       lengWaitting,
       lengShipping,
       lengDelay,
-      lengCompleted,
       loading: false,
       listData,
-      chartOptionsColumn: {
-        series: [{
-            name: 'Orders for day',
-            data: [lengWaitting,lengShipping,lengDelay,lengCompleted],
-            color: '#ffc241'
-        }],
-      }
     },() => {
       this.PaginationPage(this.state.activePage);
     });
@@ -607,30 +649,6 @@ class BranchSell extends Component {
                       </span>
                     </a>
                   </li>
-                  <li
-                    className="nav-item"
-                    onClick={() => {
-                      this.setState(
-                        {
-                          value: 3,
-                        },
-                        () => {
-                          this.getListData();
-                        }
-                      );
-                    }}
-                  >
-                    <a
-                      className="nav-link"
-                      data-toggle="tab"
-                      href="#m_tabs_1_3"
-                    >
-                      Completed{' '}
-                      <span className="m-badge m-badge--accent m-badge--wide p-0">
-                        {this.state.lengCompleted}
-                      </span>
-                    </a>
-                  </li>
                 </ul>
                 <div className="tab-content">
                   <div
@@ -666,13 +684,6 @@ class BranchSell extends Component {
                               <Chip
                                 label="Shipping"
                                 className={classes.bg_shipping}
-                              />
-                            );
-                          } else if (value.status === 3) {
-                            Status = (
-                              <Chip
-                                label="Completed"
-                                className={classes.bg_completed}
                               />
                             );
                           } else if (value.status === 1) {
@@ -740,13 +751,6 @@ class BranchSell extends Component {
                               <Chip
                                 label="Shipping"
                                 className={classes.bg_shipping}
-                              />
-                            );
-                          } else if (value.status === 3) {
-                            Status = (
-                              <Chip
-                                label="Completed"
-                                className={classes.bg_completed}
                               />
                             );
                           } else if (value.status === 1) {
@@ -917,7 +921,7 @@ class BranchSell extends Component {
                         onClick={() => {
                           this.setState({
                             stepTime: 'week',
-                            loading: true
+                            loadingGetOrder: true
                           }, () => {
                             this.getOrder()
                           });
@@ -935,7 +939,7 @@ class BranchSell extends Component {
                         onClick={() => {
                           this.setState({
                             stepTime: 'month',
-                            loading: true
+                            loadingGetOrder: true
                           }, () => {
                             this.getOrder()
                           });
@@ -953,7 +957,7 @@ class BranchSell extends Component {
                         onClick={() => {
                           this.setState({
                             stepTime: 'year',
-                            loading: true
+                            loadingGetOrder: true
                           }, () => {
                             this.getOrder()
                           });
@@ -1041,6 +1045,9 @@ class BranchSell extends Component {
           </div>
         </div>
         <Backdrop className={classes.backdrop} open={this.state.loading}>
+          <CircularProgress color="inherit" />
+        </Backdrop>
+        <Backdrop className={classes.backdrop} open={this.state.loadingGetOrder}>
           <CircularProgress color="inherit" />
         </Backdrop>
       </div>
