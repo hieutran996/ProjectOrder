@@ -220,7 +220,7 @@ class todoList extends Component {
             orderNumber: listData[0].orderNumber,
             itemDescription: listData[0].note,
             packagedQuantity: listData[0].quantity,
-            skuNumber: listData[0].typeproduct,
+            skuNumber: listData[0].skuNumber,
           },
         ];
         let idOder = listData[0].orderNumber;
@@ -235,7 +235,7 @@ class todoList extends Component {
                 orderNumber: listData[index].orderNumber,
                 itemDescription: listData[index].note,
                 packagedQuantity: listData[index].quantity,
-                skuNumber: listData[index].typeproduct,
+                skuNumber: listData[index].skuNumber,
               },
             ];
           }
@@ -248,7 +248,7 @@ class todoList extends Component {
               orderNumber: NextOrder.orderNumber,
               itemDescription: NextOrder.note,
               packagedQuantity: NextOrder.quantity,
-              skuNumber: NextOrder.typeproduct,
+              skuNumber: NextOrder.skuNumber,
             });
             listData.splice(index + 1, 1);
             index--;
