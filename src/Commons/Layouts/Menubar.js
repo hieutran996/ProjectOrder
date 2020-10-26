@@ -10,8 +10,6 @@ import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
 import ListItemText from '@material-ui/core/ListItemText';
-import InboxIcon from '@material-ui/icons/MoveToInbox';
-import MailIcon from '@material-ui/icons/Mail';
 import { NavLink } from 'react-router-dom';
 
 //Recoil
@@ -101,7 +99,7 @@ export default function Menubar() {
             <ListItem button key={value.path}>
               <ListItemIcon>
                 {
-                  <img src={value.image} className="m-2" style={{'maxWidth': '25px'}} />
+                  <img src={value.image} className="m-2" alt="x" style={{'maxWidth': '25px'}} />
                 }
               </ListItemIcon>
               <ListItemText primary={value.name} />

@@ -1,5 +1,6 @@
 import 'date-fns';
 import React, { Component } from 'react';
+import { Redirect } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import { Modal } from 'react-bootstrap';
 import Button from '@material-ui/core/Button';
@@ -18,7 +19,6 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import { withStyles  } from '@material-ui/core/styles';
 import Moment from 'moment';
 import {
-  KeyboardTimePicker,
   KeyboardDatePicker,
 } from '@material-ui/pickers';
 import MenuItem from '@material-ui/core/MenuItem';
@@ -42,7 +42,6 @@ const useStyles = (theme) => ({
 });
 
 class ModalSend extends Component {
-
     constructor(props) {
         super(props);
         this.state = {
@@ -53,7 +52,9 @@ class ModalSend extends Component {
             openDialog: false,
             valueType: null,
             valueTime: null,
-            listDataType: []
+            listDataType: [],
+            listItem: [],
+            isLogin: true
         }
     }
 
@@ -64,8 +65,37 @@ class ModalSend extends Component {
             access_token,
             client_id
         });
-        this.getListDataType()
     }
+
+    getListItem = () => {
+        var {dataSend, listItem} = this.state;
+        fetch(`${HOST2}/api/v1/orders/items?order_number=${encodeURIComponent(dataSend.orderNumber)}`, {
+          method: 'GET',
+        })
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            if (data.meta.Code === 200) {
+                for (let index = 0; index < data.data.length; index++) {
+                    dataSend.items.push({
+                        itemDescription: data.data[index].itemDescription,
+                        packagedQuantity: data.data[index].packagedQuantity,
+                        skuNumber: data.data[index].skuNumber,
+                    })
+                }
+                this.setState({
+                    listItem: data.data,
+                    dataSend
+                }, () => {
+                    this.getListDataType()
+                });
+            }
+          })
+          .catch((error) => {
+            console.log('error')
+          });
+    };
 
     //GetList
     getListDataType = () => {
@@ -79,19 +109,29 @@ class ModalSend extends Component {
             return response.json();
         })
         .then((data) => {
-        console.log(data)
         if (data.meta.Code === 200) {
-            var {dataSend,valueType} = this.state;
+            var {dataSend, listItem} = this.state;
             if (data.data.length > 0) {
-                dataSend.width = data.data[0].width;
-                dataSend.height = data.data[0].height;
-                dataSend.weight = data.data[0].weight;
-                dataSend.length = data.data[0].length;
-                valueType = data.data[0]
+                for (let index = 0; index < listItem.length; index++) {
+                    for (let i = 0; i < data.data.length; i++) {
+                        if (listItem[index].skuNumber === data.data[i].name) {
+                            dataSend.weight = parseInt(dataSend.weight) + parseInt(data.data[i].weight * listItem[index].packagedQuantity);
+                            if (dataSend.width < parseInt(data.data[i].width * listItem[index].packagedQuantity)) {
+                                dataSend.width = parseInt(data.data[i].width * listItem[index].packagedQuantity)
+                            }
+                            if (dataSend.height < parseInt(data.data[i].height * listItem[index].packagedQuantity)) {
+                                dataSend.height = parseInt(data.data[i].height * listItem[index].packagedQuantity)
+                            }
+                            if (dataSend.length < parseInt(data.data[i].length * listItem[index].packagedQuantity)) {
+                                dataSend.length = parseInt(data.data[i].length * listItem[index].packagedQuantity)
+                            }
+                        }
+                    }
+                }
+                console.log(dataSend)
             }
             this.setState({
                 dataSend,
-                valueType,
                 listDataType: data.data,
             });
         }
@@ -99,7 +139,33 @@ class ModalSend extends Component {
             console.log(error)
         });
     };
-    
+
+    getAcessToken = (dataSend, event) => {
+        fetch(`${HOST2}/api/v1/authenkey`, {
+          method: 'GET',
+        })
+          .then((response) => {
+            return response.json();
+          })
+          .then((data) => {
+            if (data.meta.Code === 200) {
+                this.setState({
+                    access_token: data.data.key
+                }, () => {
+                    this.updateGroup(dataSend, event)
+                });
+            } else {
+              this.setState({
+                isLogin: false
+              });
+            }
+          })
+          .catch((error) => {
+            this.setState({
+                isLogin: false
+              });
+          });
+    };
 
     updateGroup = async (dataSend, event) => {
         event.preventDefault();
@@ -110,7 +176,23 @@ class ModalSend extends Component {
                 'Accept': 'application/json',
                 'Content-Type': ' application/json;charset=UTF-8',
             },
-            body: JSON.stringify(dataSend)
+            body: JSON.stringify({
+                name: dataSend.name,
+                address1: dataSend.address1,
+                address2: dataSend.address2,
+                city: dataSend.city,
+                state: dataSend.state,
+                postalCode: dataSend.postalCode,
+                orderNumber: dataSend.orderNumber,
+                country: dataSend.country,
+                phone: dataSend.phone,
+                height: dataSend.height,
+                length: dataSend.length,
+                weight: dataSend.weight,
+                width: dataSend.width,
+                is_max: dataSend.is_max,
+                items: dataSend.items
+            })
         }).then((response) => {
             return response.json()
         });
@@ -155,7 +237,8 @@ class ModalSend extends Component {
         },
         body: JSON.stringify({
             'orderNumber': this.state.dataSend.orderNumber,
-            labelDetails
+            'items': this.state.dataSend.items,
+            labelDetails,
         }),
         })
         .then((response) => {
@@ -196,11 +279,30 @@ class ModalSend extends Component {
     }
 
     itemHandle(e,index) {
-        var {dataSend} = this.state;
+        var {dataSend,listDataType} = this.state;
+        dataSend.weight = 0;
+        dataSend.width = 0;
+        dataSend.height = 0;
+        dataSend.length = 0;
         dataSend.items[index][e.target.name] = e.target.value;
+        for (let index = 0; index < dataSend.items.length; index++) {
+            for (let i = 0; i < listDataType.length; i++) {
+                if (dataSend.items[index].skuNumber === listDataType[i].name) {
+                    dataSend.weight = parseInt(dataSend.weight) + parseInt(listDataType[i].weight * dataSend.items[index].packagedQuantity);
+                    if (dataSend.width < parseInt(listDataType[i].width * dataSend.items[index].packagedQuantity)) {
+                        dataSend.width = parseInt(listDataType[i].width * dataSend.items[index].packagedQuantity)
+                    }
+                    if (dataSend.height < parseInt(listDataType[i].height * dataSend.items[index].packagedQuantity)) {
+                        dataSend.height = parseInt(listDataType[i].height * dataSend.items[index].packagedQuantity)
+                    }
+                    if (dataSend.length < parseInt(listDataType[i].length * dataSend.items[index].packagedQuantity)) {
+                        dataSend.length = parseInt(listDataType[i].length * dataSend.items[index].packagedQuantity)
+                    }
+                }
+            }
+        }
         this.setState({ dataSend });
     }
-
 
     componentWillReceiveProps(nextProps) {
         if (nextProps.show === true) {
@@ -219,8 +321,9 @@ class ModalSend extends Component {
             this.setState({
                 dataSend: data,
                 valueTime: 10
+            }, () => {
+                this.getListItem()
             });
-            this.getListDataType()
         }
     }
 
@@ -288,7 +391,19 @@ class ModalSend extends Component {
         const { classes } = this.props;
         let {dataSend,listDataType} = this.state;
         let click_handle = (event) => {
-            this.updateGroup(dataSend, event);
+            if (dataSend.width > 600 || dataSend.length > 600 || dataSend.height > 600) {
+                toast('Send Error! Please Check Item!', {
+                    position: "top-right",
+                    autoClose: 2000,
+                    hideProgressBar: false,
+                    closeOnClick: true,
+                    pauseOnHover: true,
+                    draggable: true,
+                    progress: undefined,
+                });
+                return;
+            }
+            this.getAcessToken(dataSend, event);
         }
         var dataTime = []
         for (let index = 5; index <= 20; index++) {
@@ -296,6 +411,9 @@ class ModalSend extends Component {
                 'day': `${index} Days`,
                 'value': index
             })
+        }
+        if (!this.state.isLogin) {
+            return <Redirect to={'/login'} />
         }
         return (
             <Modal
@@ -307,9 +425,9 @@ class ModalSend extends Component {
                 <Modal.Header closeButton className="p-4">
                     <Modal.Title id="contained-modal-title-vcenter" className="h5">
                         Order Number: <b>{dataSend !== null && dataSend.orderNumber}</b>
-                        <span className="pl-5 pr-2" style={{'fontSize': '0.8em'}}>Select Type Product:</span>
+                        {/* <span className="pl-5 pr-2" style={{'fontSize': '0.8em'}}>Select Type Product:</span> */}
                     </Modal.Title>
-                    <div>
+                    {/* <div>
                     <FormControl className={classes.formControl}>
                         <Select
                         labelId="demo-simple-select-label"
@@ -330,27 +448,27 @@ class ModalSend extends Component {
                         }
                         </Select>
                     </FormControl>
-                    </div>
+                    </div> */}
                 </Modal.Header>
                 <Modal.Body>
                     <form id="formAddGroup">
                         <div className="col-xl-12 p-0">
                             <div className="row m-0 pb-3">
                                 <div className="form-group m-form__group col-md-6 pl-md-0">
-                                    <label htmlFor="Name">Width (mm)<span className="text-danger"> *</span></label>
-                                    <input type="number" className="form-control m-input" id="Width" name='width' value={dataSend !== null && dataSend.width} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)}  />
+                                    <label htmlFor="Name">Width ( {`< `} 600mm)<span className="text-danger"> *</span></label>
+                                    <input type="number" className="form-control m-input" id="Width" name='width' value={dataSend !== null && dataSend.width} onKeyDown={(event) => this.handleEnter(event)} readOnly onChange={e => this.SendHandle(e)}  />
                                 </div>
                                 <div className="form-group m-form__group col-md-6 pr-md-0">
-                                    <label htmlFor="Name">Height (mm)<span className="text-danger"> *</span></label>
-                                    <input type="number" className="form-control m-input" id="Height" name='height' value={dataSend !== null && dataSend.height} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)}  />
+                                    <label htmlFor="Name">Height ( {`< `} 600mm)<span className="text-danger"> *</span></label>
+                                    <input type="number" className="form-control m-input" id="Height" name='height' value={dataSend !== null && dataSend.height} onKeyDown={(event) => this.handleEnter(event)} readOnly onChange={e => this.SendHandle(e)}  />
                                 </div>
                                 <div className="form-group m-form__group col-md-6 pl-md-0">
                                     <label htmlFor="Name">Weight (gram)<span className="text-danger"> *</span></label>
-                                    <input type="number" className="form-control m-input" id="Weight" name='weight' value={dataSend !== null && dataSend.weight} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)} />
+                                    <input type="number" className="form-control m-input" id="Weight" name='weight' value={dataSend !== null && dataSend.weight} onKeyDown={(event) => this.handleEnter(event)} readOnly onChange={e => this.SendHandle(e)} />
                                 </div>
                                 <div className="form-group m-form__group col-md-6 pr-md-0">
-                                    <label htmlFor="Name">Length (mm)<span className="text-danger"> *</span></label>
-                                    <input type="number" className="form-control m-input" id="Length" name='length' value={dataSend !== null && dataSend.length} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.SendHandle(e)}  />
+                                    <label htmlFor="Name">Length ( {`< `}600mm)<span className="text-danger"> *</span></label>
+                                    <input type="number" className="form-control m-input" id="Length" name='length' value={dataSend !== null && dataSend.length} onKeyDown={(event) => this.handleEnter(event)} readOnly onChange={e => this.SendHandle(e)}  />
                                 </div>
                                 <div className="form-group m-form__group col-md-4 pl-md-0">
                                     <label htmlFor="Name">Begin Shipping</label>
@@ -420,7 +538,7 @@ class ModalSend extends Component {
                                         <th>SKU Number<span className="text-danger"> *</span></th>
                                         <th>Quantity<span className="text-danger"> *</span></th>
                                         <th>Description<span className="text-danger"> *</span>  </th>
-                                        <th>
+                                        {/* <th>
                                             <IconButton
                                                 aria-label="add"
                                                 color="primary"
@@ -438,7 +556,7 @@ class ModalSend extends Component {
                                             >
                                                 <AddIcon />
                                             </IconButton>
-                                        </th>
+                                        </th> */}
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -446,10 +564,10 @@ class ModalSend extends Component {
                                             dataSend !== null && dataSend.items.map((val, index) => {
                                                 return(
                                                     <tr key={index}>
-                                                        <td><input type="text" className="form-control m-input" id="skuNumber" name='skuNumber' value={val.skuNumber} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.itemHandle(e,index)}  /></td>
-                                                        <td><input type="number" className="form-control m-input" id="Quantity" name='packagedQuantity' value={val.packagedQuantity} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.itemHandle(e,index)}  /></td>
-                                                        <td><input type="text" className="form-control m-input" id="Description" name='itemDescription' value={val.itemDescription} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.itemHandle(e,index)}  /></td>
-                                                        <td width={50}>
+                                                        <td><input type="text" className="form-control m-input" id="skuNumber" name='skuNumber' value={val.skuNumber} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.itemHandle(e,index)} readOnly /></td>
+                                                        <td><input type="number" className="form-control m-input" id="Quantity" name='packagedQuantity' value={val.packagedQuantity} onKeyDown={(event) => this.handleEnter(event)} min='1' onChange={e => this.itemHandle(e,index)} /></td>
+                                                        <td><input type="text" className="form-control m-input" id="Description" name='itemDescription' value={val.itemDescription} onKeyDown={(event) => this.handleEnter(event)} onChange={e => this.itemHandle(e,index)} /></td>
+                                                        {/* <td width={50}>
                                                             {
                                                                 dataSend.items.length > 1
                                                                 &&
@@ -468,7 +586,7 @@ class ModalSend extends Component {
                                                                     <CloseIcon />
                                                                 </IconButton>
                                                             }
-                                                        </td>
+                                                        </td> */}
                                                     </tr>
                                                 )
                                             })

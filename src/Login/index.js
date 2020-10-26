@@ -9,7 +9,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
 import swal from 'sweetalert';
 
-import { HOST } from '../Config';
+import { HOST, HOST2 } from '../Config';
 const axios = require('axios');
 
 const useStyles = makeStyles((theme) => ({
@@ -37,10 +37,6 @@ export default function SignIn() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
-  useEffect(() => {
-    localStorage.clear();
-  }, []);
-
   const onSubmit = (event) => {
     event.preventDefault();
     axios({
@@ -61,12 +57,36 @@ export default function SignIn() {
           localStorage.setItem('time_login', response.data.meta.timestamp);
           localStorage.setItem('time_access_token', response.data.data.expired_in);
           localStorage.setItem('client_id', username);
-          window.location.href = '/';
+          pushAcessToken(response.data.data.access_token)
         } else {
           swal('Lỗi!', 'Đăng nhập thất bại', 'error');
         }
       })
       .catch(function (error) {
+        swal('Lỗi!', 'Đăng nhập thất bại', 'error');
+      });
+  };
+
+  const pushAcessToken = (access_token) => {
+    console.log('1')
+    fetch(`${HOST2}/api/v1/authenkey?Key=${access_token}&CreatedAt`, {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': ' application/json;charset=UTF-8',
+      },
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        if (data.meta.Code === 200) {
+          window.location.href = '/';
+        } else {
+          swal('Lỗi!', 'Đăng nhập thất bại', 'error');
+        }
+      })
+      .catch((error) => {
         swal('Lỗi!', 'Đăng nhập thất bại', 'error');
       });
   };

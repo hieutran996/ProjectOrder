@@ -19,7 +19,7 @@ const useStyles = (theme) => ({
     },
     bg_completed: {
         background: '#00c5dc',
-        color: "#fff"
+        color: "#fff",
     },
 });
 class ModalEditShipping extends Component {
@@ -222,7 +222,7 @@ class ModalEditShipping extends Component {
                 </Modal.Body>
                 <Modal.Footer>
                     <Button variant="contained"  onClick={this.props.onHide} className="mr-2">Close</Button>
-                    <Button variant="contained" className={[classes.bg_completed, 'mr-2']}  onClick={click_complated}>Complated</Button>
+                    <Button variant="contained" className={classes.bg_completed}  onClick={click_complated}>Complated</Button>
                     <Button variant="contained" color="primary"   onClick={click_handle}>Update</Button>
                 </Modal.Footer>
             </Modal>

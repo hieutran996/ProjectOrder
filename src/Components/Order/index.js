@@ -12,9 +12,10 @@ import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import CloudDownloadIcon from '@material-ui/icons/CloudDownload';
 import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
 import EditIcon from '@material-ui/icons/Edit';
-import DoneIcon from '@material-ui/icons/Done';
 import Chip from '@material-ui/core/Chip';
 import TimerOffIcon from '@material-ui/icons/TimerOff';
+import FilterNoneIcon from '@material-ui/icons/FilterNone';
+import { CopyToClipboard } from 'react-copy-to-clipboard';
 import Moment from 'moment';
 //Modal
 import ModalSend from './ModalSend';
@@ -28,7 +29,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
 
-import { HOST, HOST2 } from '../../Config';
+import { HOST2 } from '../../Config';
 import ModalViewData from './ModalViewData';
 import { withStyles } from '@material-ui/core/styles';
 
@@ -37,11 +38,10 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import swal from 'sweetalert';
 import ModalEditShipping from './EditShipping';
 
-import InputLabel from '@material-ui/core/InputLabel';
 import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
 import Select from '@material-ui/core/Select';
-import { KeyboardTimePicker, KeyboardDatePicker } from '@material-ui/pickers';
+import { KeyboardDatePicker } from '@material-ui/pickers';
 
 const useStyles = (theme) => ({
   button: {
@@ -113,6 +113,7 @@ class todoList extends Component {
       modalViewShipping: false,
       openDialog: false,
       loadingImport: true,
+      copied: false,
       dataLabelDetail: null,
       startDate: new Date(),
       endDate: new Date(),
@@ -194,8 +195,7 @@ class todoList extends Component {
   };
 
   //onChange File
-  onFilesChange = (files) => {
-    // if (files && files[0]) this.setState({ file: files[0] });
+  onChangeFiles = (files) => {
     const reader = new FileReader();
     const rABS = !!reader.readAsBinaryString;
 
@@ -214,15 +214,54 @@ class todoList extends Component {
       /* Update state */
       this.setState({ listData: data, cols: make_cols(ws['!ref']) }, () => {
         let { listData } = this.state;
-        for (let index = 0; index < this.state.listData.length; index++) {
+        if (listData.length === 0) return;
+        listData[0].items = [
+          {
+            orderNumber: listData[0].orderNumber,
+            itemDescription: listData[0].note,
+            packagedQuantity: listData[0].quantity,
+            skuNumber: listData[0].typeproduct,
+          },
+        ];
+        let idOder = listData[0].orderNumber;
+        let idOderNext;
+        for (let index = 0; index < listData.length; index++) {
           listData[index].postalCode = listData[index].postalCode + '';
+          //chcekOrder
+          if (idOder !== listData[index].orderNumber) {
+            idOder = listData[index].orderNumber;
+            listData[index].items = [
+              {
+                orderNumber: listData[index].orderNumber,
+                itemDescription: listData[index].note,
+                packagedQuantity: listData[index].quantity,
+                skuNumber: listData[index].typeproduct,
+              },
+            ];
+          }
+          let NextOrder = listData[index + 1];
+          if (NextOrder !== undefined) {
+            idOderNext = NextOrder.orderNumber;
+          }
+          if (NextOrder !== undefined && idOder === idOderNext) {
+            listData[index].items.push({
+              orderNumber: NextOrder.orderNumber,
+              itemDescription: NextOrder.note,
+              packagedQuantity: NextOrder.quantity,
+              skuNumber: NextOrder.typeproduct,
+            });
+            listData.splice(index + 1, 1);
+            index--;
+          }
         }
+        console.log(this.state.listData)
         this.setState(
           {
             listData,
           },
           () => {
             this.insertData(this.state.listData);
+            this.insertLabelDetail(this.state.listData);
           }
         );
       });
@@ -282,6 +321,33 @@ class todoList extends Component {
           progress: undefined,
         });
         this.setState({ loadingImport: false });
+      });
+  };
+
+  //Insert Label Detail
+  insertLabelDetail = (dataInsert) => {
+    var mergeItem = [];
+    for (let index = 0; index < dataInsert.length; index++) {
+      mergeItem = mergeItem.concat(dataInsert[index].items);
+    }
+    console.log(mergeItem);
+    fetch(`${HOST2}/api/v1/labels`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-type': 'application/json; charset=UTF-8',
+      },
+      body: JSON.stringify({
+        orderNumber: '',
+        items: mergeItem,
+        labelDetails: {},
+      }),
+    })
+      .then((response) => {
+        return response.json();
+      })
+      .then((data) => {
+        console.log(data);
       });
   };
 
@@ -362,7 +428,6 @@ class todoList extends Component {
                 variant="inline"
                 format="dd-MM-yyyy"
                 margin="normal"
-                id="date-picker-inline"
                 label="Start Date"
                 value={this.state.startDate}
                 onChange={this.handleChangStartDate}
@@ -378,7 +443,6 @@ class todoList extends Component {
                 variant="inline"
                 format="dd-MM-yyyy"
                 margin="normal"
-                id="date-picker-inline"
                 label="End Date"
                 value={this.state.endDate}
                 onChange={this.handleChangEndDate}
@@ -465,15 +529,10 @@ class todoList extends Component {
               >
                 Export Template
               </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                className={classes.button}
-                startIcon={<CloudUploadIcon />}
-              >
+              <div style={{ display: 'inline-block' }}>
                 <Files
                   className="files-dropzone"
-                  onChange={this.onFilesChange}
+                  onChange={this.onChangeFiles}
                   onError={this.onFilesError}
                   accepts={['.xlsx']}
                   multiple={false}
@@ -481,9 +540,16 @@ class todoList extends Component {
                   minFileSize={0}
                   clickable
                 >
-                  Import Excel
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className={classes.button}
+                    startIcon={<CloudUploadIcon />}
+                  >
+                    Import Excel
+                  </Button>
                 </Files>
-              </Button>
+              </div>
             </div>
             <div className="col-12">
               <Table bordered hover>
@@ -624,18 +690,12 @@ class todoList extends Component {
                                 aria-label="send"
                                 color="primary"
                                 onClick={(v) => {
-                                  value.weight = '';
-                                  value.height = '';
-                                  value.width = '';
-                                  value.length = '';
+                                  value.weight = 0;
+                                  value.height = 0;
+                                  value.width = 0;
+                                  value.length = 0;
                                   value.is_max = 1;
-                                  value.items = [
-                                    {
-                                      itemDescription: '',
-                                      packagedQuantity: '',
-                                      skuNumber: '',
-                                    },
-                                  ];
+                                  value.items = [];
                                   this.setState({
                                     itemData: value,
                                     modalSend: true,
@@ -663,6 +723,24 @@ class todoList extends Component {
                             </IconButton>
                           ) : (
                             ''
+                          )}
+                          {value.status !== 0 && (
+                            <CopyToClipboard
+                              text={value.lableDetails.partnerTrackingNumber}
+                              onCopy={() => this.setState({ copied: true }, () => {toast('Copy Success!', {
+                                position: 'top-right',
+                                autoClose: 2000,
+                                hideProgressBar: false,
+                                closeOnClick: true,
+                                pauseOnHover: true,
+                                draggable: true,
+                                progress: undefined,
+                              });})}
+                            >
+                              <IconButton aria-label="copy" color="primary">
+                                <FilterNoneIcon />
+                              </IconButton>
+                            </CopyToClipboard>
                           )}
                           {value.status !== 3 && (
                             <IconButton
@@ -723,6 +801,7 @@ class todoList extends Component {
                               <DeleteForeverIcon />
                             </IconButton>
                           )}
+                          
                         </td>
                       </tr>
                     );
